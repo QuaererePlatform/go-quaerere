@@ -1,0 +1,4 @@
+.gopath/
+.go-version
+tmp/
+.env
