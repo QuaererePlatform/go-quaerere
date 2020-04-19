@@ -1,0 +1,15 @@
+---
+version: "3.7"
+services:
+  kootenay:
+    build:
+      context: .
+      dockerfile: ./build/docker/dev/Dockerfile
+    working_dir: /webapp
+    environment:
+      air_wd: /webapp
+    ports:
+      - 8080:1323
+    volumes:
+      - ./:/webapp
+    command: ["-c", "./.air.conf"]
