@@ -1,4 +1,4 @@
-package kootenay
+package cmd
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/QuaererePlatform/go-kootenay/internal/server"
+	"github.com/QuaererePlatform/go-quaerere/internal/server"
 )
 
 var serveCmd = &cobra.Command{

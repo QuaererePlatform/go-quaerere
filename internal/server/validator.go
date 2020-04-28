@@ -1,6 +1,6 @@
 package server
 
-import "github.com/QuaererePlatform/go-kootenay/internal/validator"
+import "github.com/QuaererePlatform/go-quaerere/internal/validator"
 
 type customValidator struct {}
 

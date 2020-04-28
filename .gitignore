@@ -2,3 +2,4 @@
 .go-version
 tmp/
 .env
+out/

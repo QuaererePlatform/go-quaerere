@@ -4,15 +4,16 @@ import (
 	"context"
 	"fmt"
 	"time"
-	"github.com/labstack/echo/v4/middleware"
-	"github.com/labstack/echo/v4"
 
-	"github.com/QuaererePlatform/go-kootenay/internal/server/handlers"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+
+	"github.com/QuaererePlatform/go-quaerere/internal/server/handlers"
 )
 
 const (
-	readTimeout = 5 * time.Second
-	writeTimeout = 10* time.Second
+	readTimeout  = 5 * time.Second
+	writeTimeout = 10 * time.Second
 )
 
 type (
@@ -22,7 +23,7 @@ type (
 	}
 
 	server struct {
-		echo *echo.Echo
+		echo   *echo.Echo
 		config *Config
 	}
 )
@@ -44,7 +45,7 @@ func New(c *Config) (Server, error) {
 	}
 
 	s.setupRoutes()
-	s.setupMiddlewares()
+	s.setupMiddleware()
 
 	return s, nil
 }
@@ -57,7 +58,7 @@ func (s *server) Shutdown(ctx context.Context) error {
 	return s.echo.Shutdown(ctx)
 }
 
-func (s *server) setupMiddlewares() {
+func (s *server) setupMiddleware() {
 	s.echo.Use(middleware.Gzip())
 	s.echo.Use(middleware.Logger())
 	s.echo.Use(middleware.Recover())

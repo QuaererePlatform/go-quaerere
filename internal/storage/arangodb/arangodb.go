@@ -1,4 +1,4 @@
-package types
+package arangodb
 
 type (
 	ArangoDBInfo struct {

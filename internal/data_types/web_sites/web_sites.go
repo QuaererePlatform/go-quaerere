@@ -3,7 +3,7 @@ package web_sites
 import (
 	"net/url"
 
-	"github.com/QuaererePlatform/go-kootenay/internal/data_types/accounting"
+	"github.com/QuaererePlatform/go-quaerere/internal/data_types/accounting"
 )
 
 type (

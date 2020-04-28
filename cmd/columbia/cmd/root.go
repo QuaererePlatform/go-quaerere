@@ -1,4 +1,4 @@
-package kootenay
+package cmd
 
 import (
 	"fmt"
@@ -32,7 +32,7 @@ func initConfig() {
 	viper.SetDefault(envAppEnv, "development")
 	viper.SetDefault("debug_mode", false)
 
-	viper.SetEnvPrefix("kootenay")
+	viper.SetEnvPrefix("columbia")
 
 	/*	for k, v := range map[string]string{
 			"debug": "debug_mode",
