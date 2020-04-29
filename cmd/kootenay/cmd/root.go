@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -52,7 +51,7 @@ func initConfig() {
 
 	viper.SetEnvPrefix(ENV_PREFIX)
 
-	for k, v := range map[string]string{
+/*	for k, v := range map[string]string{
 		FLAG_DEBUG: ENV_FLAG_DEBUG,
 	} {
 		if err := viper.BindPFlag(v, serveCmd.PersistentFlags().Lookup(k)); err != nil {
@@ -67,5 +66,5 @@ func initConfig() {
 		if err := viper.BindEnv(e); err != nil {
 			log.Fatal(err)
 		}
-	}
+	}*/
 }

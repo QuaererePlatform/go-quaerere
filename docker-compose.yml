@@ -1,7 +1,9 @@
 ---
 version: "3.7"
+
 services:
-  kootenay:
+
+  columbia:
     build:
       context: .
       dockerfile: ./build/docker/dev/Dockerfile
@@ -12,4 +14,17 @@ services:
       - 8080:1323
     volumes:
       - ./:/webapp
-    command: ["-c", "./.air.conf"]
+    command: ["-c", "./build/docker/dev/columbia/air.conf"]
+
+  kootenay:
+    build:
+      context: .
+      dockerfile: ./build/docker/dev/Dockerfile
+    working_dir: /webapp
+    environment:
+      air_wd: /webapp
+    ports:
+      - 8081:1323
+    volumes:
+      - ./:/webapp
+    command: ["-c", "./build/docker/dev/kootenay/air.conf"]
