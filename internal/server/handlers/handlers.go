@@ -4,11 +4,13 @@ import (
 	"errors"
 
 	"github.com/labstack/echo/v4"
+
+	"github.com/QuaererePlatform/go-quaerere/internal/storage"
 )
 
 type (
 	Handler struct {
-
+		Storage *storage.Storage
 	}
 )
 

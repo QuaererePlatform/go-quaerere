@@ -10,15 +10,15 @@ import (
 type (
 	WebSiteHandler struct {
 		handlers.Handler
-		dataType struct{}
 	}
 )
 
-func (w WebSiteHandler) Create(c echo.Context) error {
+func (w WebSiteHandler) Post(c echo.Context) error {
 	ws := new(web_sites.WebSite)
 	if err := c.Bind(ws); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -30,7 +30,7 @@ func (w WebSiteHandler) List(c echo.Context) error {
 	return nil
 }
 
-func (w WebSiteHandler) Read(c echo.Context) error {
+func (w WebSiteHandler) Get(c echo.Context) error {
 	return nil
 }
 

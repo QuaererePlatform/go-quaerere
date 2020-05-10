@@ -14,13 +14,13 @@ COPY go.mod .
 COPY go.sum .
 RUN go mod download
 COPY . .
-RUN make build_kootenay
+RUN make build_columbia
 
 # Package kootenay
 # ----------------
 FROM alpine:${ALPINE_VERSION}
-WORKDIR /opt/kootenay
+WORKDIR /opt/columbia
 COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=builder /tmp/build/kootenay .
+COPY --from=builder /tmp/build/columbia .
 COPY ./build/docker/prod/entrypoint.sh /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

@@ -12,10 +12,12 @@ const (
 	ENV_PREFIX = "kootenay"
 
 	FLAG_APP_ENV_DEFAULT = "development"
+
 	FLAG_DEBUG           = "debug"
 	FLAG_DEBUG_SHORT     = "d"
 	FLAG_DEBUG_DEFAULT   = false
 	FLAG_DEBUG_DESCR     = "enable debug mode"
+
 	FLAG_STORAGE         = "storage-backend"
 	FLAG_STORAGE_SHORT   = "s"
 	FLAG_STORAGE_DEFAULT = "arangodb"
@@ -23,6 +25,7 @@ const (
 
 	ENV_FLAG_APP_ENV = "app_env"
 	ENV_FLAG_DEBUG   = "debug_mode"
+	ENV_FLAG_STORAGE = "storage_backend"
 )
 
 var rootCmd = &cobra.Command{
@@ -45,26 +48,9 @@ func init() {
 }
 
 func initConfig() {
+	viper.SetEnvPrefix(ENV_PREFIX)
 
 	viper.SetDefault(ENV_FLAG_APP_ENV, FLAG_APP_ENV_DEFAULT)
 	viper.SetDefault(ENV_FLAG_DEBUG, FLAG_DEBUG_DEFAULT)
-
-	viper.SetEnvPrefix(ENV_PREFIX)
-
-/*	for k, v := range map[string]string{
-		FLAG_DEBUG: ENV_FLAG_DEBUG,
-	} {
-		if err := viper.BindPFlag(v, serveCmd.PersistentFlags().Lookup(k)); err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	for _, e := range []string{
-		ENV_FLAG_APP_ENV,
-		ENV_FLAG_DEBUG,
-	} {
-		if err := viper.BindEnv(e); err != nil {
-			log.Fatal(err)
-		}
-	}*/
+	viper.SetDefault(ENV_FLAG_STORAGE, FLAG_STORAGE_DEFAULT)
 }

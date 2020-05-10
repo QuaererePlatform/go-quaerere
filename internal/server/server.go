@@ -8,7 +8,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
-	"github.com/QuaererePlatform/go-quaerere/internal/server/handlers"
+	"github.com/QuaererePlatform/go-quaerere/internal/server/handlers/kootenay"
+	"github.com/QuaererePlatform/go-quaerere/internal/storage"
 )
 
 const (
@@ -23,8 +24,9 @@ type (
 	}
 
 	server struct {
-		echo   *echo.Echo
-		config *Config
+		echo    *echo.Echo
+		config  *Config
+		storage *storage.Storage
 	}
 )
 
@@ -39,9 +41,12 @@ func New(c *Config) (Server, error) {
 		return nil, err
 	}
 
+	store := storage.NewStorage(c.StorageBackend)
+
 	s := &server{
-		echo:   e,
-		config: c,
+		echo:    e,
+		config:  c,
+		storage: store,
 	}
 
 	s.setupRoutes()
@@ -66,6 +71,15 @@ func (s *server) setupMiddleware() {
 }
 
 func (s *server) setupRoutes() {
-	h := &handlers.Handler{}
-	s.echo.GET("/", h.Home).Name = "home"
+	wp := new(kootenay.WebPageHandler)
+	/*ws := &kootenay.WebSiteHandler{
+		*h,
+	}*/
+
+	//s.echo.GET("/", h.Home).Name = "home"
+
+	//s.echo.GET("/api/v1/web-page/:id", wp.Get).Name = "web-page-get"
+	s.echo.POST("/api/v1/web-page/", wp.Post(s.storage)).Name = "web-page-post"
+
+	//s.echo.GET("/api/v1/web-site/:id", ws.Get).Name = "web-site-get"
 }

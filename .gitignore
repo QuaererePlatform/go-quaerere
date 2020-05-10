@@ -1,5 +1,6 @@
 .gopath/
 .go-version
 tmp/
-.env
+.env*
 out/
+.volumes/

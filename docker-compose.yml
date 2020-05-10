@@ -1,7 +1,17 @@
 ---
-version: "3.7"
+version: "3.8"
 
 services:
+
+  arangodb:
+    image: "quaerereplatform/quaerere-arangodb:latest"
+    ports:
+      - "8529:8529"
+    env_file:
+      - ".env.arangodb"
+    volumes:
+      - "./.volumes/arangodb:/var/lib/arangodb3"
+      - "./.volumes/arangodb-apps:/var/lib/arangodb3-apps"
 
   columbia:
     build:
@@ -11,7 +21,7 @@ services:
     environment:
       air_wd: /webapp
     ports:
-      - 8080:1323
+      - 8081:1323
     volumes:
       - ./:/webapp
     command: ["-c", "./build/docker/dev/columbia/air.conf"]
@@ -20,11 +30,13 @@ services:
     build:
       context: .
       dockerfile: ./build/docker/dev/Dockerfile
+    depends_on:
+      - arangodb
     working_dir: /webapp
     environment:
       air_wd: /webapp
     ports:
-      - 8081:1323
+      - 8080:1323
     volumes:
       - ./:/webapp
     command: ["-c", "./build/docker/dev/kootenay/air.conf"]

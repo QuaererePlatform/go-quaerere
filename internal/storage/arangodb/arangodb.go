@@ -1,7 +1,7 @@
 package arangodb
 
 type (
-	ArangoDBInfo struct {
+	ArangoDBMeta struct {
 		ID          string `json:"_id,omitempty"`
 		Key         string `json:"_key,omitempty"`
 		Revision    string `json:"_rev,omitempty"`
