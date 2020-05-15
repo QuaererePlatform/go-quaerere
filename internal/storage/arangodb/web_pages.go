@@ -6,7 +6,7 @@ import (
 
 	"github.com/arangodb/go-driver"
 
-	"github.com/QuaererePlatform/go-quaerere/internal/data_types/web_pages"
+	"github.com/QuaererePlatform/go-quaerere/internal/common/web_pages"
 )
 
 const WEB_PAGE_COLLECTION = "WebPages"

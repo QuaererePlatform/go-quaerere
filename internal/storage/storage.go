@@ -5,8 +5,8 @@ import (
 
 	"github.com/arangodb/go-driver"
 
-	"github.com/QuaererePlatform/go-quaerere/internal/data_types/web_pages"
-	"github.com/QuaererePlatform/go-quaerere/internal/data_types/web_sites"
+	"github.com/QuaererePlatform/go-quaerere/internal/common/web_pages"
+	"github.com/QuaererePlatform/go-quaerere/internal/common/web_sites"
 	"github.com/QuaererePlatform/go-quaerere/internal/storage/arangodb"
 )
 

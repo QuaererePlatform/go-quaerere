@@ -1,15 +1,14 @@
 package web_sites
 
 import (
-	"net/url"
-
-	"github.com/QuaererePlatform/go-quaerere/internal/data_types/accounting"
+	"github.com/QuaererePlatform/go-quaerere/internal/common/accounting"
+	"github.com/QuaererePlatform/go-quaerere/internal/common"
 )
 
 type (
 	WebSite struct {
 		InLanguage       string                      `json:"in_language"`
 		SourceAccounting accounting.SourceAccounting `json:"source_accounting"`
-		URL              url.URL                     `json:"url"`
+		URL              common.StringURL            `json:"url,string"`
 	}
 )
