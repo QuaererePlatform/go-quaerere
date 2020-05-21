@@ -12,18 +12,36 @@ import (
 
 type (
 	Storage struct {
-		driver StorageDriver
+		driver    StorageDriver
+		itemStore []ItemStore
+	}
+
+	StorageItem interface{
+		GetData() (interface{}, error)
+	}
+
+	StorageMeta interface{
+		GetMeta() (interface{}, error)
+	}
+
+	ItemStore interface {
+		Create(*StorageItem) (*StorageMeta, error)
+		Read(string) (*StorageItem, error)
+		Update(string, map[string]interface{}) (*StorageMeta, error)
+		Delete(string) (*StorageMeta, error)
+
+		Init() error
 	}
 
 	StorageDriver interface {
-		CreateWebPage(wp *web_pages.WebPage) (*driver.DocumentMeta, error)
-		ReadWebPage(key string) (*web_pages.WebPage, error)
-		UpdateWebPage(key string, data map[string]interface{}) (*driver.DocumentMeta, error)
-		DeleteWebPage(key string) (*driver.DocumentMeta, error)
-		CreateWebSite(wp *web_sites.WebSite) (*driver.DocumentMeta, error)
-		ReadWebSite(key string) (*web_sites.WebSite, error)
-		UpdateWebSite(key string, data map[string]interface{}) (*driver.DocumentMeta, error)
-		DeleteWebSite(key string) (*driver.DocumentMeta, error)
+		CreateWebPage(*web_pages.WebPage) (*driver.DocumentMeta, error)
+		ReadWebPage(string) (*web_pages.WebPage, error)
+		UpdateWebPage(string, map[string]interface{}) (*driver.DocumentMeta, error)
+		DeleteWebPage(string) (*driver.DocumentMeta, error)
+		CreateWebSite(*web_sites.WebSite) (*driver.DocumentMeta, error)
+		ReadWebSite(string) (*web_sites.WebSite, error)
+		UpdateWebSite(string, map[string]interface{}) (*driver.DocumentMeta, error)
+		DeleteWebSite(string) (*driver.DocumentMeta, error)
 	}
 )
 
@@ -45,6 +63,10 @@ func NewStorage(backend string) *Storage {
 	}
 
 	return s
+}
+
+func (s Storage) Init() error {
+	return s.driver.Init()
 }
 
 func (s Storage) CreateWebPage(wp *web_pages.WebPage) error {

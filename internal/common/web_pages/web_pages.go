@@ -13,3 +13,7 @@ type (
 		WebSiteKey       string                      `json:"web_site_key"`
 	}
 )
+
+func (wp *WebPage) GetData() (interface{}, error) {
+	return wp, nil
+}

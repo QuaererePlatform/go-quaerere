@@ -30,3 +30,6 @@ clean:
 
 deps:
 	$(GO_GET)
+
+db_init_kootenay:
+	$(OUT_DIR)/$(BINARY_NAME_KOOTENAY) dbinit

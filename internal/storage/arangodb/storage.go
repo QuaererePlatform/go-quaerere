@@ -24,9 +24,13 @@ type (
 		AuthType  adb.AuthenticationType
 		Auth      bool
 	}
+
+	DocumentMeta struct {
+		adb.DocumentMeta
+	}
 )
 
-var conn   adb.Connection
+var conn adb.Connection
 var once sync.Once
 
 func NewArangoDBStorage(config Config) *ArangoDBStorage {
@@ -37,14 +41,11 @@ func NewArangoDBStorage(config Config) *ArangoDBStorage {
 
 func (s ArangoDBStorage) connect(ctx context.Context) (adb.Database, error) {
 	err := *new(error)
-	once.Do(func(){
+	once.Do(func() {
 		conn, err = http.NewConnection(http.ConnectionConfig{
 			Endpoints: s.config.Endpoints,
 		})
 	})
-/*	conn, err = http.NewConnection(http.ConnectionConfig{
-		Endpoints: s.config.Endpoints,
-	})*/
 	if err != nil {
 		// Handle error
 		log.Printf("Conn err: %+v", err)
@@ -87,9 +88,27 @@ func (s ArangoDBStorage) connect(ctx context.Context) (adb.Database, error) {
 	return db, nil
 }
 
+func (s ArangoDBStorage) createCollection(ctx context.Context, name string, options *adb.CreateCollectionOptions) error {
+	db, err := s.connect(ctx)
+	if err != nil {
+		return err
+	}
+
+	e, err := db.CollectionExists(ctx, name)
+	if err != nil {
+		return err
+	}
+	var c_err error
+	if e != true {
+		_, c_err = db.CreateCollection(ctx, name, options)
+	}
+
+	return c_err
+}
+
 func (s ArangoDBStorage) getCollection(ctx context.Context, name string) (adb.Collection, error) {
 	log.Printf("getCollection() before connect s: %+v", s)
-	db , err := s.connect(ctx)
+	db, err := s.connect(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -101,4 +120,8 @@ func (s ArangoDBStorage) getCollection(ctx context.Context, name string) (adb.Co
 	}
 
 	return coll, nil
+}
+
+func (d DocumentMeta) GetMeta() (interface{}, error) {
+	return d, nil
 }

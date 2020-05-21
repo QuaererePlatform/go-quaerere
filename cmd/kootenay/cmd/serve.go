@@ -54,14 +54,6 @@ func init() {
 func serve(cmd *cobra.Command, args []string) {
 	c := new(server.Config)
 
-	/*for _, i := range []interface{}{
-		c,
-	} {
-		if err := viper.Unmarshal(i); err != nil {
-			log.Fatal(err)
-		}
-	}*/
-
 	if err := viper.Unmarshal(c); err != nil {
 		log.Fatal(err)
 	}
