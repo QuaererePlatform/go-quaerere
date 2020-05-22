@@ -42,6 +42,9 @@ func New(c *Config) (Server, error) {
 	}
 
 	store := storage.NewStorage(c.StorageBackend)
+	if err := store.Init(); err != nil {
+		return nil, err
+	}
 
 	s := &server{
 		echo:    e,

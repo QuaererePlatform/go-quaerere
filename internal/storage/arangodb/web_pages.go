@@ -18,11 +18,6 @@ type (
 	}
 )
 
-func (s WebPageStore) Init() error {
-	ctx := context.Background()
-	return s.createCollection(ctx, WEB_PAGE_COLLECTION, nil)
-}
-
 func (s WebPageStore) Create(wp *web_pages.WebPage) (*DocumentMeta, error) {
 	ctx := context.Background()
 	meta, err := s.CreateDocument(ctx, wp)

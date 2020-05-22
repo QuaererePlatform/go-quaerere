@@ -11,9 +11,10 @@ import (
 
 type (
 	ArangoDBStorage struct {
-		client adb.Client
-		config Config
-		db     adb.Database
+		client      adb.Client
+		config      Config
+		db          adb.Database
+		collections []string
 	}
 
 	Config struct {
@@ -36,7 +37,22 @@ var once sync.Once
 func NewArangoDBStorage(config Config) *ArangoDBStorage {
 	s := new(ArangoDBStorage)
 	s.config = config
+	s.collections = []string{
+		WEB_PAGE_COLLECTION,
+		WEB_SITE_COLLECTION,
+	}
 	return s
+}
+
+func (s ArangoDBStorage) Init() error {
+
+	for _, c := range s.collections {
+		ctx := context.Background()
+		if err := s.createCollection(ctx, c, nil); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s ArangoDBStorage) connect(ctx context.Context) (adb.Database, error) {

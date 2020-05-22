@@ -13,7 +13,7 @@ import (
 type (
 	Storage struct {
 		driver    StorageDriver
-		itemStore []ItemStore
+		itemStore map[string]ItemStore
 	}
 
 	StorageItem interface{
@@ -29,19 +29,19 @@ type (
 		Read(string) (*StorageItem, error)
 		Update(string, map[string]interface{}) (*StorageMeta, error)
 		Delete(string) (*StorageMeta, error)
-
-		Init() error
 	}
 
 	StorageDriver interface {
-		CreateWebPage(*web_pages.WebPage) (*driver.DocumentMeta, error)
+		/*CreateWebPage(*web_pages.WebPage) (*driver.DocumentMeta, error)
 		ReadWebPage(string) (*web_pages.WebPage, error)
 		UpdateWebPage(string, map[string]interface{}) (*driver.DocumentMeta, error)
 		DeleteWebPage(string) (*driver.DocumentMeta, error)
 		CreateWebSite(*web_sites.WebSite) (*driver.DocumentMeta, error)
 		ReadWebSite(string) (*web_sites.WebSite, error)
 		UpdateWebSite(string, map[string]interface{}) (*driver.DocumentMeta, error)
-		DeleteWebSite(string) (*driver.DocumentMeta, error)
+		DeleteWebSite(string) (*driver.DocumentMeta, error)*/
+
+		Init() error
 	}
 )
 
