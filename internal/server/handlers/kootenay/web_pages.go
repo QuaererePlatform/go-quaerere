@@ -28,17 +28,20 @@ type (
 	return c.NoContent(http.StatusCreated)
 }*/
 
-func (w WebPageHandler) Post(s *storage.Storage) echo.HandlerFunc {
+func (w WebPageHandler) Post(s storage.StorageDriver) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		log.Printf("WebPageHandler.Post() s: %+v", s)
 		wp := new(web_pages.WebPage)
 		if err := c.Bind(wp); err != nil {
 			return c.String(http.StatusInternalServerError, err.Error())
 		}
-		if err := s.CreateWebPage(wp); err != nil {
+		meta, err := s.Create(wp)
+		if err != nil {
 			return c.String(http.StatusInternalServerError, err.Error())
 		}
-		return c.NoContent(http.StatusCreated)
+		log.Printf("WebPageHandler.Post() meta: %#v", meta)
+		return c.JSON(http.StatusCreated, meta.GetMeta())
+		//return c.NoContent(http.StatusCreated)
 	}
 }
 

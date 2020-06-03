@@ -14,6 +14,6 @@ type (
 	}
 )
 
-func (wp *WebPage) GetData() (interface{}, error) {
-	return wp, nil
+func (wp *WebPage) GetData() interface{} {
+	return wp
 }

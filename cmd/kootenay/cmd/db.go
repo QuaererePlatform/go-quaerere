@@ -3,10 +3,12 @@ package cmd
 import (
 	"log"
 
+	"github.com/arangodb/go-driver"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/QuaererePlatform/go-quaerere/internal/storage"
+	"github.com/QuaererePlatform/go-quaerere/internal/storage/arangodb"
 )
 
 type (
@@ -32,7 +34,25 @@ func dbInit(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	store := storage.NewStorage(c.StorageBackend)
+	var store storage.StorageDriver
+
+	switch c.StorageBackend {
+	case "arangodb":
+		c := new(arangodb.Config)
+		c.Endpoints = []string{
+			"http://arangodb:8529/",
+		}
+		c.Database = "quaerere"
+		c.Username = "quaerere"
+		c.Password = "password"
+		c.Auth = true
+		c.AuthType = driver.AuthenticationTypeBasic
+		store = arangodb.NewArangoDBStorage(*c)
+	}
+
+	if store == nil {
+		log.Fatal()
+	}
 
 	if err := store.Init(); err != nil {
 		log.Fatal(err)
