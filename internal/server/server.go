@@ -36,6 +36,8 @@ type (
 func New(c *Config) (Server, error) {
 	e := echo.New()
 	e.Debug = c.DebugMode
+	e.HideBanner = true
+	e.HidePort = true
 	e.Server.ReadTimeout = readTimeout
 	e.Server.WriteTimeout = writeTimeout
 	e.Validator = &customValidator{}

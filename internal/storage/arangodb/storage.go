@@ -17,11 +17,11 @@ import (
 
 type (
 	ArangoDBStorage struct {
-		conn      adb.Connection
-		client    adb.Client
-		config    Config
-		db        adb.Database
-		collNames []string
+		conn    adb.Connection
+		client  adb.Client
+		config  Config
+		db      adb.Database
+		collMap map[string]string
 	}
 
 	Config struct {
@@ -38,6 +38,9 @@ type (
 	}
 )
 
+const WEB_PAGE_COLLECTION = "WebPages"
+const WEB_SITE_COLLECTION = "WebSites"
+
 var store ArangoDBStorage
 var once sync.Once
 
@@ -45,9 +48,9 @@ func NewArangoDBStorage(config Config) *ArangoDBStorage {
 	once.Do(func() {
 		store = ArangoDBStorage{
 			config: config,
-			collNames: []string{
-				WEB_PAGE_COLLECTION,
-				WEB_SITE_COLLECTION,
+			collMap: map[string]string{
+				"*web_pages.WebPage": WEB_PAGE_COLLECTION,
+				"*web_sites.WebSite": WEB_SITE_COLLECTION,
 			},
 		}
 	})
@@ -57,7 +60,7 @@ func NewArangoDBStorage(config Config) *ArangoDBStorage {
 
 func (s ArangoDBStorage) Init() error {
 
-	for _, c := range s.collNames {
+	for _, c := range s.collMap {
 		ctx := context.Background()
 		if err := s.createCollection(ctx, c, nil); err != nil {
 			return err
@@ -74,12 +77,10 @@ func (s ArangoDBStorage) connect(ctx context.Context) (adb.Database, error) {
 	})
 
 	if err != nil {
-		// Handle error
-		log.Printf("Conn err: %+v", err)
 		return nil, err
 	}
 	log.Printf("connect() s.conn: %+v", s.conn)
-	zlog.Debug()
+	zlog.Debug().Fields(map[string]interface{}{"s.conn": s.conn}).Msg("connection info")
 
 	cc := adb.ClientConfig{
 		Connection: s.conn,
@@ -155,36 +156,25 @@ func (s ArangoDBStorage) getCollection(ctx context.Context, name string) (adb.Co
 	return coll, nil
 }
 
-func collectionName(i storage.StorageItem) (string, error) {
-	switch i.(type) {
-	case *web_pages.WebPage:
-		log.Printf("s.Create() i: %#v", i)
-		return WEB_PAGE_COLLECTION, nil
-	default:
-		err := new(UnknownCollectionError)
-		err.coll = fmt.Sprintf("%T", i)
-		return "", err
-	}
-}
-
-func (s ArangoDBStorage) Create(i storage.StorageItem) (storage.StorageMeta, error) {
-	log.Printf("s.Create() T(i): %T", i)
+func (s ArangoDBStorage) Create(item storage.StorageItem) (storage.StorageMeta, error) {
+	log.Printf("s.Create() T(i): %T", item)
 	log.Printf("arangodb.CreateWebPage() before getCollection s: %+v", s)
 	ctx := context.TODO()
-	log.Printf("arangodb.CreateWebPage() ctx fresh: %+v", ctx)
-	collName, err := collectionName(i)
-	if err != nil {
+	itemType := fmt.Sprintf("%T", item)
+	collName, ok := s.collMap[itemType]
+	if !ok {
+		err := new(UnknownCollectionError)
+		err.coll = itemType
 		return nil, err
 	}
 	coll, err := s.getCollection(ctx, collName)
-	log.Printf("arangodb.CreateWebPage() ctx after getCollections: %+v", ctx)
 	log.Printf("arangodb.CreateWebPage() coll: %+v", coll)
 	log.Printf("arangodb.CreateWebPage() after getCollections s: %+v", s)
 	if err != nil {
 		return nil, err
 	}
 
-	adbMeta, err := coll.CreateDocument(ctx, i.GetData())
+	adbMeta, err := coll.CreateDocument(ctx, item.GetData())
 	if err != nil {
 		return nil, err
 	}
@@ -200,16 +190,81 @@ func (s ArangoDBStorage) Create(i storage.StorageItem) (storage.StorageMeta, err
 
 }
 
-func (s ArangoDBStorage) Read(key string) (storage.StorageItem, error) {
-	return nil, nil
+func (s ArangoDBStorage) Read(key string, itemType string) (storage.StorageItem, storage.StorageMeta, error) {
+	ctx := context.Background()
+	collName, ok := s.collMap[itemType]
+	if !ok {
+		err := new(UnknownCollectionError)
+		err.coll = itemType
+		return nil, nil, err
+	}
+	coll, err := s.getCollection(ctx, collName)
+	if err != nil {
+		return nil, nil, err
+	}
+	wp := new(web_pages.WebPage)
+	adbMeta, err := coll.ReadDocument(ctx, key, wp)
+	log.Printf("Meta: %+v", adbMeta)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var meta DocumentMeta
+
+	err = copier.Copy(&meta, adbMeta)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return wp, meta, nil
 }
 
-func (s ArangoDBStorage) Update(string, map[string]interface{}) (storage.StorageMeta, error) {
-	return nil, nil
+func (s ArangoDBStorage) Update(key string, data map[string]interface{}, itemType string) (storage.StorageMeta, error) {
+	ctx := context.Background()
+	collName, ok := s.collMap[itemType]
+	if !ok {
+		err := new(UnknownCollectionError)
+		err.coll = itemType
+		return nil, err
+	}
+	coll, _ := s.getCollection(ctx, collName)
+	adbMeta, err := coll.UpdateDocument(ctx, key, data)
+	if err != nil {
+		return nil, err
+	}
+
+	var meta DocumentMeta
+
+	err = copier.Copy(&meta, adbMeta)
+	if err != nil {
+		return nil, err
+	}
+
+	return &meta, nil
 }
 
-func (s ArangoDBStorage) Delete(string) (storage.StorageMeta, error) {
-	return nil, nil
+func (s ArangoDBStorage) Delete(key string, itemType string) (storage.StorageMeta, error) {
+	ctx := context.Background()
+	collName, ok := s.collMap[itemType]
+	if !ok {
+		err := new(UnknownCollectionError)
+		err.coll = itemType
+		return nil, err
+	}
+	coll, _ := s.getCollection(ctx, collName)
+	adbMeta, err := coll.RemoveDocument(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+
+	var meta DocumentMeta
+
+	err = copier.Copy(&meta, adbMeta)
+	if err != nil {
+		return nil, err
+	}
+
+	return &meta, nil
 }
 
 func (d DocumentMeta) GetMeta() interface{} {

@@ -9,6 +9,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/rs/zerolog"
+	zlog "github.com/rs/zerolog/log"
 
 	"github.com/QuaererePlatform/go-quaerere/internal/server"
 )
@@ -58,11 +60,18 @@ func serve(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	if c.DebugMode {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
+	zlog.Debug().Msg("Debug enabled")
+
 	s, err := server.New(c)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	zlog.Info().Msg("Starting server")
 	go func() { log.Fatal(s.Start()) }()
 
 	quit := make(chan os.Signal, 1)
