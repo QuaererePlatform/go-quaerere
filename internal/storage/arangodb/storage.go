@@ -12,6 +12,7 @@ import (
 	zlog "github.com/rs/zerolog/log"
 
 	"github.com/QuaererePlatform/go-quaerere/internal/common/web_pages"
+	"github.com/QuaererePlatform/go-quaerere/internal/common/web_sites"
 	"github.com/QuaererePlatform/go-quaerere/internal/storage"
 )
 
@@ -156,6 +157,19 @@ func (s ArangoDBStorage) getCollection(ctx context.Context, name string) (adb.Co
 	return coll, nil
 }
 
+func makeStorageItem(collName string) (storage.StorageItem, error) {
+	switch collName {
+	case WEB_PAGE_COLLECTION:
+		return new(web_pages.WebPage), nil
+	case WEB_SITE_COLLECTION:
+		return new(web_sites.WebSite), nil
+	default:
+		e := new(UnknownCollectionError)
+		e.coll = collName
+		return nil, e
+	}
+}
+
 func (s ArangoDBStorage) Create(item storage.StorageItem) (storage.StorageMeta, error) {
 	log.Printf("s.Create() T(i): %T", item)
 	log.Printf("arangodb.CreateWebPage() before getCollection s: %+v", s)
@@ -202,8 +216,11 @@ func (s ArangoDBStorage) Read(key string, itemType string) (storage.StorageItem,
 	if err != nil {
 		return nil, nil, err
 	}
-	wp := new(web_pages.WebPage)
-	adbMeta, err := coll.ReadDocument(ctx, key, wp)
+	item, err := makeStorageItem(collName)
+	if err != nil {
+		return nil, nil, err
+	}
+	adbMeta, err := coll.ReadDocument(ctx, key, item)
 	log.Printf("Meta: %+v", adbMeta)
 	if err != nil {
 		return nil, nil, err
@@ -216,7 +233,7 @@ func (s ArangoDBStorage) Read(key string, itemType string) (storage.StorageItem,
 		return nil, nil, err
 	}
 
-	return wp, meta, nil
+	return item, meta, nil
 }
 
 func (s ArangoDBStorage) Update(key string, data map[string]interface{}, itemType string) (storage.StorageMeta, error) {

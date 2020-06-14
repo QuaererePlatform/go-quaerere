@@ -6,6 +6,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 
+	"github.com/QuaererePlatform/go-quaerere/internal/common"
+	"github.com/QuaererePlatform/go-quaerere/internal/common/accounting"
 	"github.com/QuaererePlatform/go-quaerere/internal/common/web_pages"
 	"github.com/QuaererePlatform/go-quaerere/internal/server/handlers"
 	"github.com/QuaererePlatform/go-quaerere/internal/storage"
@@ -15,18 +17,32 @@ type (
 	WebPageHandler struct {
 		handlers.Handler
 	}
-)
 
-/*func (w WebPageHandler) Post(c echo.Context) error {
-	wp := new(web_pages.WebPage)
-	if err := c.Bind(wp); err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+	WebPageData struct {
+		Text             string                        `json:"text"`
+		URL              common.StringURL              `json:"url,string"`
 	}
-	if err := w.Storage.CreateWebPage(wp); err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+
+	WebPageMeta struct {
+		SourceAccounting []accounting.SourceAccounting `json:"sourceAccounting"`
 	}
-	return c.NoContent(http.StatusCreated)
-}*/
+
+	WebPageRequest struct {
+		SourceAccounting []accounting.SourceAccounting `json:"sourceAccounting"`
+		Text             string                        `json:"text"`
+		URL              common.StringURL              `json:"url,string"`
+		WebSiteKey       string                        `json:"webSiteKey"`
+	}
+
+	WebPageResponse struct {
+		Data  WebPageData `json:"data"`
+		Meta  WebPageMeta `json:"meta"`
+		SourceAccounting []accounting.SourceAccounting `json:"sourceAccounting"`
+		Text             string                        `json:"text"`
+		URL              common.StringURL              `json:"url,string"`
+		WebSiteKey       string                        `json:"webSiteKey"`
+	}
+)
 
 func (w WebPageHandler) Post(s storage.StorageDriver) echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -41,22 +57,29 @@ func (w WebPageHandler) Post(s storage.StorageDriver) echo.HandlerFunc {
 		}
 		log.Printf("WebPageHandler.Post() meta: %#v", meta)
 		return c.JSON(http.StatusCreated, meta.GetMeta())
-		//return c.NoContent(http.StatusCreated)
 	}
 }
 
-func (w WebPageHandler) Delete(c echo.Context) error {
-	return nil
+func (w WebPageHandler) Delete(s storage.StorageDriver) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		return nil
+	}
 }
 
-func (w WebPageHandler) List(c echo.Context) error {
-	return nil
+func (w WebPageHandler) List(s storage.StorageDriver) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		return nil
+	}
 }
 
-func (w WebPageHandler) Get(c echo.Context) error {
-	return nil
+func (w WebPageHandler) Get(s storage.StorageDriver) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		return nil
+	}
 }
 
-func (w WebPageHandler) Put(c echo.Context) error {
-	return nil
+func (w WebPageHandler) Put(s storage.StorageDriver) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		return nil
+	}
 }
