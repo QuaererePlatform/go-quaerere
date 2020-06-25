@@ -78,8 +78,8 @@ func (s *server) setupRoutes() {
 
 	//s.echo.GET("/", h.Home).Name = "home"
 
-	//s.echo.GET("/api/v1/web-page/:id", wp.Get).Name = "web-page-get"
-	s.echo.POST("/api/v1/web-page/", wp.Post(s.storage)).Name = "web-page-post"
+	//s.echo.GET("/api/v0/web-page/:id", wp.Get).Name = "web-page-get"
+	s.echo.POST("/api/v0/web-page/", wp.Post(s.storage)).Name = "web-page-post"
 
-	//s.echo.GET("/api/v1/web-site/:id", ws.Get).Name = "web-site-get"
+	//s.echo.GET("/api/v0/web-site/:id", ws.Get).Name = "web-site-get"
 }

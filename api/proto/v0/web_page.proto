@@ -1,0 +1,77 @@
+syntax = "proto3";
+package v0;
+
+import "accounting.proto";
+
+message WebPage {
+  string url = 1;
+  string text = 2;
+  string web_site_key = 3;
+}
+
+message CreateWebPageRequest {
+  repeated WebPage web_pages = 1;
+}
+
+message CreateWebPageResponse {
+  message Result {
+    string key = 1;
+    string error = 2;
+  }
+  repeated Result results = 1;
+}
+
+message ReadWebPageRequest {
+  repeated string keys = 1;
+  enum Fields {
+    URL = 0;
+    TEXT = 1;
+    WEB_SITE_KEY = 2;
+  }
+  repeated Fields fields = 2;
+}
+
+message ReadWebPageResponse {
+  message Result {
+    string key = 1;
+    WebPage web_page = 2;
+    string error = 3;
+  }
+  repeated Result results = 1;
+}
+
+message UpdateWebPageRequest {
+  message Updates {
+    string key = 1;
+    WebPage web_page = 2;
+  }
+  repeated Updates updates = 1;
+}
+
+message UpdateWebPageResponse {
+  message Result {
+    string key = 1;
+    string error = 2;
+  }
+  repeated Result results = 1;
+}
+
+message DeleteWebPageRequest {
+  repeated string keys = 1;
+}
+
+message DeleteWebPageResponse {
+  message Result {
+    string key = 1;
+    string error = 2;
+  }
+  repeated Result results = 1;
+}
+
+message ListWebPageRequest {
+  int32 num_results = 1;
+}
+
+message ListWebPageResults {
+  repeated string keys = 1;
+}

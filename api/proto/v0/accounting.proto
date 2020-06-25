@@ -1,0 +1,9 @@
+syntax = "proto3";
+package v0;
+
+import "google/protobuf/timestamp.proto";
+
+message SourceAccounting {
+  string data_origin = 1;
+  google.protobuf.Timestamp datetime_acquired = 2;
+}
