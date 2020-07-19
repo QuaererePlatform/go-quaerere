@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/arangodb/go-driver v0.0.0-20200403100147-ca5dd87ffe93
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/golang/protobuf v1.4.2
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/kr/text v0.2.0 // indirect
@@ -23,6 +24,8 @@ require (
 	golang.org/x/crypto v0.0.0-20200427165652-729f1e841bcc // indirect
 	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0 // indirect
 	golang.org/x/sys v0.0.0-20200428200454-593003d681fa // indirect
+	google.golang.org/grpc v1.21.0
+	google.golang.org/protobuf v1.23.0
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
 )

@@ -1,5 +1,6 @@
 syntax = "proto3";
 package v0;
+option go_package = "pkg/api/v0;v0";
 
 import "google/protobuf/timestamp.proto";
 

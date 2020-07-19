@@ -9,7 +9,7 @@ import (
 	"github.com/QuaererePlatform/go-quaerere/internal/common"
 	"github.com/QuaererePlatform/go-quaerere/internal/common/accounting"
 	"github.com/QuaererePlatform/go-quaerere/internal/common/web_pages"
-	"github.com/QuaererePlatform/go-quaerere/internal/server/handlers"
+	"github.com/QuaererePlatform/go-quaerere/internal/protocol/http/server/handlers"
 	"github.com/QuaererePlatform/go-quaerere/internal/storage"
 )
 

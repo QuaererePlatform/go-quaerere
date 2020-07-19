@@ -1,5 +1,6 @@
 syntax = "proto3";
 package v0;
+option go_package = "pkg/api/v0;v0";
 
 import "accounting.proto";
 
@@ -35,7 +36,8 @@ message ReadWebPageResponse {
   message Result {
     string key = 1;
     WebPage web_page = 2;
-    string error = 3;
+    repeated SourceAccounting sources = 3;
+    string error = 4;
   }
   repeated Result results = 1;
 }
@@ -74,4 +76,12 @@ message ListWebPageRequest {
 
 message ListWebPageResults {
   repeated string keys = 1;
+}
+
+service WebPageService {
+  rpc CreateWebPage(CreateWebPageRequest) returns (CreateWebPageResponse) {}
+  rpc ReadWebPage(ReadWebPageRequest) returns (ReadWebPageResponse) {}
+  rpc UpdateWebPage(UpdateWebPageRequest) returns (UpdateWebPageResponse) {}
+  rpc DeleteWebPage(DeleteWebPageRequest) returns (DeleteWebPageResponse) {}
+  rpc ListWebPages(ListWebPageRequest) returns (ListWebPageResults) {}
 }

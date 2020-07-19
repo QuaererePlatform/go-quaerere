@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
-	"github.com/QuaererePlatform/go-quaerere/internal/server/handlers/kootenay"
+	"github.com/QuaererePlatform/go-quaerere/internal/protocol/http/server/handlers/kootenay"
 	"github.com/QuaererePlatform/go-quaerere/internal/storage"
 	"github.com/QuaererePlatform/go-quaerere/internal/storage/arangodb"
 )
@@ -26,11 +26,10 @@ type (
 	}
 
 	server struct {
-		echo    *echo.Echo
-		config  *Config
-		storage storage.StorageDriver
+		config     *Config
+		httpServer *echo.Echo
+		storage    storage.StorageDriver
 	}
-
 )
 
 func New(c *Config) (Server, error) {
@@ -47,8 +46,8 @@ func New(c *Config) (Server, error) {
 	}
 
 	s := &server{
-		echo:    e,
-		config:  c,
+		config:     c,
+		httpServer: e,
 	}
 
 	if err := s.setupStorage(); err != nil {
@@ -61,18 +60,18 @@ func New(c *Config) (Server, error) {
 }
 
 func (s *server) Start() error {
-	return s.echo.Start(fmt.Sprintf("%s:%d", s.config.Bind, *s.config.Port))
+	return s.httpServer.Start(fmt.Sprintf("%s:%d", s.config.Bind, *s.config.Port))
 }
 
 func (s *server) Shutdown(ctx context.Context) error {
-	return s.echo.Shutdown(ctx)
+	return s.httpServer.Shutdown(ctx)
 }
 
 func (s *server) setupMiddleware() {
-	s.echo.Use(middleware.Gzip())
-	s.echo.Use(middleware.Logger())
-	s.echo.Use(middleware.Recover())
-	s.echo.Use(middleware.Secure())
+	s.httpServer.Use(middleware.Gzip())
+	s.httpServer.Use(middleware.Logger())
+	s.httpServer.Use(middleware.Recover())
+	s.httpServer.Use(middleware.Secure())
 }
 
 func (s *server) setupRoutes() {
@@ -81,12 +80,12 @@ func (s *server) setupRoutes() {
 		*h,
 	}*/
 
-	//s.echo.GET("/", h.Home).Name = "home"
+	// s.httpServer.GET("/", h.Home).Name = "home"
 
-	//s.echo.GET("/api/v0/web-page/:id", wp.Get).Name = "web-page-get"
-	s.echo.POST("/api/v0/web-page/", wp.Post(s.storage)).Name = "web-page-post"
+	// s.httpServer.GET("/api/v0/web-page/:id", wp.Get).Name = "web-page-get"
+	s.httpServer.POST("/api/v0/web-page/", wp.Post(s.storage)).Name = "web-page-post"
 
-	//s.echo.GET("/api/v0/web-site/:id", ws.Get).Name = "web-site-get"
+	// s.httpServer.GET("/api/v0/web-site/:id", ws.Get).Name = "web-site-get"
 }
 
 func (s *server) setupStorage() error {
