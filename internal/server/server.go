@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/arangodb/go-driver"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
 	"github.com/QuaererePlatform/go-quaerere/internal/server/handlers/kootenay"
 	"github.com/QuaererePlatform/go-quaerere/internal/storage"
+	"github.com/QuaererePlatform/go-quaerere/internal/storage/arangodb"
 )
 
 const (
@@ -26,13 +28,16 @@ type (
 	server struct {
 		echo    *echo.Echo
 		config  *Config
-		storage *storage.Storage
+		storage storage.StorageDriver
 	}
+
 )
 
 func New(c *Config) (Server, error) {
 	e := echo.New()
 	e.Debug = c.DebugMode
+	e.HideBanner = true
+	e.HidePort = true
 	e.Server.ReadTimeout = readTimeout
 	e.Server.WriteTimeout = writeTimeout
 	e.Validator = &customValidator{}
@@ -41,14 +46,14 @@ func New(c *Config) (Server, error) {
 		return nil, err
 	}
 
-	store := storage.NewStorage(c.StorageBackend)
-
 	s := &server{
 		echo:    e,
 		config:  c,
-		storage: store,
 	}
 
+	if err := s.setupStorage(); err != nil {
+		return nil, err
+	}
 	s.setupRoutes()
 	s.setupMiddleware()
 
@@ -82,4 +87,25 @@ func (s *server) setupRoutes() {
 	s.echo.POST("/api/v0/web-page/", wp.Post(s.storage)).Name = "web-page-post"
 
 	//s.echo.GET("/api/v0/web-site/:id", ws.Get).Name = "web-site-get"
+}
+
+func (s *server) setupStorage() error {
+	switch s.config.StorageBackend {
+	case "arangodb":
+		c := new(arangodb.Config)
+		c.Endpoints = []string{
+			"http://arangodb:8529/",
+		}
+		c.Database = "quaerere"
+		c.Username = "quaerere"
+		c.Password = "password"
+		c.Auth = true
+		c.AuthType = driver.AuthenticationTypeBasic
+		s.storage = arangodb.NewArangoDBStorage(*c)
+	}
+
+	if err := s.storage.Init(); err != nil {
+		return err
+	}
+	return nil
 }
