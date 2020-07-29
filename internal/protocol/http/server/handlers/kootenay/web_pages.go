@@ -19,8 +19,8 @@ type (
 	}
 
 	WebPageData struct {
-		Text             string                        `json:"text"`
-		URL              common.StringURL              `json:"url,string"`
+		Text string           `json:"text"`
+		URL  common.StringURL `json:"url,string"`
 	}
 
 	WebPageMeta struct {
@@ -35,8 +35,8 @@ type (
 	}
 
 	WebPageResponse struct {
-		Data  WebPageData `json:"data"`
-		Meta  WebPageMeta `json:"meta"`
+		Data             WebPageData                   `json:"data"`
+		Meta             WebPageMeta                   `json:"meta"`
 		SourceAccounting []accounting.SourceAccounting `json:"sourceAccounting"`
 		Text             string                        `json:"text"`
 		URL              common.StringURL              `json:"url,string"`

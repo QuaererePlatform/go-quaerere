@@ -9,6 +9,7 @@ import (
 	adb "github.com/arangodb/go-driver"
 	"github.com/arangodb/go-driver/http"
 	"github.com/jinzhu/copier"
+	"github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
 
 	"github.com/QuaererePlatform/go-quaerere/internal/common/web_pages"
@@ -18,11 +19,12 @@ import (
 
 type (
 	ArangoDBStorage struct {
-		conn    adb.Connection
-		client  adb.Client
-		config  Config
-		db      adb.Database
-		collMap map[string]string
+		conn          adb.Connection
+		client        adb.Client
+		client_config adb.ClientConfig
+		config        Config
+		db            adb.Database
+		collMap       map[string]string
 	}
 
 	Config struct {
@@ -42,11 +44,32 @@ type (
 const WEB_PAGE_COLLECTION = "WebPages"
 const WEB_SITE_COLLECTION = "WebSites"
 
+var logger zerolog.Logger
+var loggerOnce sync.Once
 var store ArangoDBStorage
-var once sync.Once
+var storeOnce sync.Once
+
+func init() {
+	loggerOnce.Do(func() {
+		logger = zlog.With().Str("component", "storage").Str("storage_driver", "arangodb").Logger()
+	})
+}
+
+func makeStorageItem(collName string) (storage.StorageItem, error) {
+	switch collName {
+	case WEB_PAGE_COLLECTION:
+		return new(web_pages.WebPage), nil
+	case WEB_SITE_COLLECTION:
+		return new(web_sites.WebSite), nil
+	default:
+		e := new(UnknownCollectionError)
+		e.coll = collName
+		return nil, e
+	}
+}
 
 func NewArangoDBStorage(config Config) *ArangoDBStorage {
-	once.Do(func() {
+	storeOnce.Do(func() {
 		store = ArangoDBStorage{
 			config: config,
 			collMap: map[string]string{
@@ -59,17 +82,6 @@ func NewArangoDBStorage(config Config) *ArangoDBStorage {
 	return &store
 }
 
-func (s ArangoDBStorage) Init() error {
-
-	for _, c := range s.collMap {
-		ctx := context.Background()
-		if err := s.createCollection(ctx, c, nil); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func (s ArangoDBStorage) connect(ctx context.Context) (adb.Database, error) {
 	var err error
 
@@ -80,8 +92,10 @@ func (s ArangoDBStorage) connect(ctx context.Context) (adb.Database, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("connect() s.conn: %+v", s.conn)
-	zlog.Debug().Fields(map[string]interface{}{"s.conn": s.conn}).Msg("connection info")
+	logger.Debug().
+		Str("method", "connect").
+		Str("s.conn", fmt.Sprintf("%#v", s.conn)).
+		Msg("connection info")
 
 	cc := adb.ClientConfig{
 		Connection: s.conn,
@@ -119,7 +133,7 @@ func (s ArangoDBStorage) connect(ctx context.Context) (adb.Database, error) {
 }
 
 func (s ArangoDBStorage) createCollection(ctx context.Context, name string, options *adb.CreateCollectionOptions) error {
-	db, err := s.connect(ctx)
+	db, err := s.getDatabase(ctx)
 	if err != nil {
 		return err
 	}
@@ -137,37 +151,138 @@ func (s ArangoDBStorage) createCollection(ctx context.Context, name string, opti
 }
 
 func (s ArangoDBStorage) getCollection(ctx context.Context, name string) (adb.Collection, error) {
-	log.Printf("getCollection() before connect s: %+v", s)
-	var db adb.Database
+	logger.Debug().
+		Str("database", fmt.Sprintf("%#v", s.db)).
+		Msg("before getDatabase")
+	var err error
 	if s.db == nil {
-		var err error
-		db, err = s.connect(ctx)
+		s.db, err = s.getDatabase(ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	log.Printf("getCollection() after connect s: %+v", s)
+	logger.Debug().
+		Str("database", fmt.Sprintf("%#v", s.db)).
+		Msg("after getDatabase")
 
-	coll, err := db.Collection(ctx, name)
+	coll, err := s.db.Collection(ctx, name)
 	if err != nil {
 		return nil, err
 	}
+	logger.Debug().
+		Str("collection", fmt.Sprintf("%#v", coll)).
+		Msg("retrieved collection")
 
 	return coll, nil
 }
 
-func makeStorageItem(collName string) (storage.StorageItem, error) {
-	switch collName {
-	case WEB_PAGE_COLLECTION:
-		return new(web_pages.WebPage), nil
-	case WEB_SITE_COLLECTION:
-		return new(web_sites.WebSite), nil
-	default:
-		e := new(UnknownCollectionError)
-		e.coll = collName
-		return nil, e
+func (s ArangoDBStorage) getDatabase(ctx context.Context) (adb.Database, error) {
+	logger.Debug().
+		Str("method", "getDatabase").
+		Str("s", fmt.Sprintf("%#v", s)).Msg("ArangoDBStorage object")
+	logger.Debug().
+		Str("method", "getDatabase").
+		Str("s.db", fmt.Sprintf("%#v", s.db)).Msg("stored database")
+	logger.Debug().
+		Str("method", "getDatabase").
+		Str("s.client", fmt.Sprintf("%#v", s.client)).Msg("stored client")
+	if s.db == nil {
+		db, err := s.client.Database(ctx, s.config.Database)
+		logger.Debug().
+			Str("database", fmt.Sprintf("%#v", db)).
+			Msg("retrieved database")
+		if err != nil {
+			return nil, err
+		}
+		s.db = db
 	}
+	logger.Debug().
+		Str("s.db", fmt.Sprintf("%#v", s.db)).
+		Msg("stored database")
+	return s.db, nil
+}
+
+func (s ArangoDBStorage) getClient() (adb.Client, error) {
+	return nil, nil
+}
+
+func (s ArangoDBStorage) SetupClient() error {
+	var err error
+
+	logger.Debug().
+		Strs("endpoints", s.config.Endpoints).
+		Msg("creating connection")
+	s.conn, err = http.NewConnection(http.ConnectionConfig{
+		Endpoints: s.config.Endpoints,
+	})
+	if err != nil {
+		return err
+	}
+	logger.Debug().
+		Str("connection", fmt.Sprintf("%#v", s.conn)).
+		Msg("connection info")
+
+	s.client_config = adb.ClientConfig{
+		Connection: s.conn,
+	}
+	if s.config.Auth == true {
+		logger.Debug().
+			Str("auth_type", fmt.Sprintf("%#v", s.config.AuthType)).
+			Msg("using auth")
+		switch s.config.AuthType {
+		case adb.AuthenticationTypeBasic:
+			s.client_config.Authentication = adb.BasicAuthentication(s.config.Username, s.config.Password)
+		case adb.AuthenticationTypeJWT:
+			s.client_config.Authentication = adb.JWTAuthentication(s.config.Username, s.config.Password)
+		default:
+			err := new(UnknownAuthMethodError)
+			return err
+		}
+	}
+	logger.Debug().
+		Str("client_config", fmt.Sprintf("%#v", s.client_config)).
+		Msg("config info")
+
+	s.client, err = adb.NewClient(s.client_config)
+	if err != nil {
+		return err
+	}
+	logger.Debug().
+		Str("client", fmt.Sprintf("%#v", s.client)).
+		Msg("client info")
+
+	ctx := context.Background()
+	defer ctx.Done()
+	e, err := s.client.DatabaseExists(ctx, s.config.Database)
+	if err != nil {
+		return err
+	}
+	if e != true {
+		err := new(DatabaseDoesNotExistError)
+		err.db = s.config.Database
+		return err
+	}
+	logger.Info().
+		Str("database_exists", fmt.Sprintf("%#v", e)).
+		Msg("connected to server")
+
+	logger.Debug().
+		Str("method", "SetupClient").
+		Str("s", fmt.Sprintf("%#v", s)).Msg("ArangoDBStorage object")
+
+	return nil
+}
+
+func (s ArangoDBStorage) InitDB() error {
+	zlog.Info()
+	for _, c := range s.collMap {
+		ctx := context.Background()
+		if err := s.createCollection(ctx, c, nil); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s ArangoDBStorage) Create(item storage.StorageItem) (storage.StorageMeta, error) {
@@ -282,6 +397,40 @@ func (s ArangoDBStorage) Delete(key string, itemType string) (storage.StorageMet
 	}
 
 	return &meta, nil
+}
+
+func (s ArangoDBStorage) List(itemType string, offset int, limit int) (storage.StorageItems, error) {
+	ctx := context.Background()
+	collName, ok := s.collMap[itemType]
+	if !ok {
+		err := new(UnknownCollectionError)
+		err.coll = itemType
+		return nil, err
+	}
+	// TODO: Protobuf is only returning keys, need to reconcile returning data here
+	q := fmt.Sprintf("FOR i IN %s SORT i._key LIMIT %i, %i RETURN i", collName, offset, limit)
+	cur, err := s.db.Query(ctx, q, nil)
+	if err != nil {
+		return nil, err
+	}
+	zlog.Debug().Fields(map[string]interface{}{"query": q, "num_results": cur.Count()})
+	items := make(storage.StorageItems, 0)
+	for {
+		item, err := makeStorageItem(collName)
+		if err != nil {
+			return nil, err
+		}
+		// TODO: Integrate DB metadata into StorageItem
+		_, err = cur.ReadDocument(ctx, &item)
+		zlog.Debug().Fields(map[string]interface{}{"cursor_stats": cur.Statistics()})
+		items = append(items, item)
+		if adb.IsNoMoreDocuments(err) {
+			break
+		} else if err != nil {
+			return items, err
+		}
+	}
+	return items, nil
 }
 
 func (d DocumentMeta) GetMeta() interface{} {

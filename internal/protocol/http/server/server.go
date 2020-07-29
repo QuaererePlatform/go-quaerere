@@ -103,7 +103,7 @@ func (s *server) setupStorage() error {
 		s.storage = arangodb.NewArangoDBStorage(*c)
 	}
 
-	if err := s.storage.Init(); err != nil {
+	if err := s.storage.InitDB(); err != nil {
 		return err
 	}
 	return nil

@@ -53,4 +53,7 @@ func initConfig() {
 	viper.SetDefault(ENV_FLAG_APP_ENV, FLAG_APP_ENV_DEFAULT)
 	viper.SetDefault(ENV_FLAG_DEBUG, FLAG_DEBUG_DEFAULT)
 	viper.SetDefault(ENV_FLAG_STORAGE, FLAG_STORAGE_DEFAULT)
+
+	_ = viper.BindPFlag(ENV_FLAG_DEBUG, rootCommand.Flags().Lookup(FLAG_DEBUG))
+	_ = viper.BindPFlag(ENV_FLAG_STORAGE, rootCommand.Flags().Lookup(FLAG_STORAGE))
 }

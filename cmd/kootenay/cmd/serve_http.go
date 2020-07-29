@@ -2,13 +2,12 @@ package cmd
 
 import (
 	"context"
-	"log"
 	"os"
 	"os/signal"
 	"time"
 
 	"github.com/rs/zerolog"
-	zlog "github.com/rs/zerolog/log"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -57,24 +56,24 @@ func serve_http(cmd *cobra.Command, args []string) {
 	c := new(server.Config)
 
 	if err := viper.Unmarshal(c); err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	if c.DebugMode {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
-	zlog.Debug().Msg("Debug enabled")
+	log.Debug().Msg("Debug enabled")
 
 	s, err := server.New(c)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 
-	zlog.Info().Msg("Starting server")
+	log.Info().Msg("Starting server")
 	go func() {
 		if err := s.Start(); err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err)
 		}
 	}()
 
@@ -84,6 +83,6 @@ func serve_http(cmd *cobra.Command, args []string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	if err := s.Shutdown(ctx); err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 }

@@ -5,6 +5,8 @@ type (
 		GetData() interface{}
 	}
 
+	StorageItems []StorageItem
+
 	StorageMeta interface {
 		GetMeta() interface{}
 	}
@@ -14,7 +16,9 @@ type (
 		Read(string, string) (StorageItem, StorageMeta, error)
 		Update(string, map[string]interface{}, string) (StorageMeta, error)
 		Delete(string, string) (StorageMeta, error)
+		List(itemType string, offset int, limit int) (StorageItems, error)
 
-		Init() error
+		InitDB() error
+		SetupClient() error
 	}
 )

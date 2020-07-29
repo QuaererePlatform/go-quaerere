@@ -70,6 +70,7 @@ message DeleteWebSiteResponse {
 
 message ListWebSiteRequest {
   int32 num_results = 1;
+  int32 offset = 2;
 }
 
 message ListWebSiteResults {

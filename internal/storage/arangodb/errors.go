@@ -5,11 +5,18 @@ import (
 )
 
 type (
-	UnknownAuthMethodError struct {}
+	DatabaseDoesNotExistError struct {
+		db string
+	}
+	UnknownAuthMethodError struct{}
 	UnknownCollectionError struct {
 		coll string
 	}
 )
+
+func (e DatabaseDoesNotExistError) Error() string {
+	return fmt.Sprintf("requested database does not exist: %q", e.db)
+}
 
 func (e UnknownAuthMethodError) Error() string {
 	return "unknown auth method"
