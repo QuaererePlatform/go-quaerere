@@ -68,12 +68,6 @@ func dbInit(cmd *cobra.Command, args []string) {
 	}
 
 	if store != nil {
-		if err := store.SetupClient(); err != nil {
-			log.Fatal().Err(err).Msg("error setting up client")
-		}
-		log.Debug().
-			Str("method", "dbInit").
-			Str("s", fmt.Sprintf("%#v", store)).Msg("StorageDriver object")
 		if err := store.InitDB(); err != nil {
 			log.Fatal().Err(err).Msg("error initializing database")
 		}

@@ -19,12 +19,12 @@ import (
 
 type (
 	ArangoDBStorage struct {
-		conn          adb.Connection
-		client        adb.Client
-		client_config adb.ClientConfig
-		config        Config
-		db            adb.Database
-		collMap       map[string]string
+		conn         adb.Connection
+		client       adb.Client
+		clientConfig *adb.ClientConfig
+		config       Config
+		db           adb.Database
+		collMap      map[string]string
 	}
 
 	Config struct {
@@ -84,23 +84,28 @@ func NewArangoDBStorage(config Config) *ArangoDBStorage {
 
 func (s ArangoDBStorage) connect(ctx context.Context) (adb.Database, error) {
 	var err error
+	ll := logger.With().Str("method", "connect").Logger()
 
+	ll.Debug().
+		Strs("endpoints", s.config.Endpoints).
+		Msg("creating connection")
 	s.conn, err = http.NewConnection(http.ConnectionConfig{
 		Endpoints: s.config.Endpoints,
 	})
-
 	if err != nil {
 		return nil, err
 	}
-	logger.Debug().
-		Str("method", "connect").
-		Str("s.conn", fmt.Sprintf("%#v", s.conn)).
+	ll.Debug().
+		Str("connection", fmt.Sprintf("%#v", s.conn)).
 		Msg("connection info")
 
 	cc := adb.ClientConfig{
 		Connection: s.conn,
 	}
 	if s.config.Auth == true {
+		ll.Debug().
+			Str("auth_type", fmt.Sprintf("%#v", s.config.AuthType)).
+			Msg("using auth")
 		switch s.config.AuthType {
 		case adb.AuthenticationTypeBasic:
 			cc.Authentication = adb.BasicAuthentication(s.config.Username, s.config.Password)
@@ -111,28 +116,44 @@ func (s ArangoDBStorage) connect(ctx context.Context) (adb.Database, error) {
 			return nil, err
 		}
 	}
-	log.Printf("connect() cc: %+v", cc)
+	ll.Debug().
+		Str("clientConfig", fmt.Sprintf("%#v", s.clientConfig)).
+		Msg("config info")
 
 	s.client, err = adb.NewClient(cc)
 	if err != nil {
-		// Handle error
-		log.Printf("Client err: %+v", err)
 		return nil, err
 	}
-	log.Printf("connect() s.client: %#v", s.client)
+	ll.Debug().
+		Str("client", fmt.Sprintf("%#v", s.client)).
+		Msg("client info")
 
+	e, err := s.client.DatabaseExists(ctx, s.config.Database)
+	if err != nil {
+		return nil, err
+	}
+	if e != true {
+		err := new(DatabaseDoesNotExistError)
+		err.db = s.config.Database
+		return nil, err
+	}
+	ll.Info().
+		Str("database_exists", fmt.Sprintf("%#v", e)).
+		Msg("connected to server")
 	s.db, err = s.client.Database(ctx, s.config.Database)
 	if err != nil {
-		// Handle error
-		log.Printf("DB err: %+v", err)
 		return nil, err
 	}
-	log.Printf("connect() s.db: %#v", s.db)
+	ll.Info().
+		Str("database", fmt.Sprintf("%#v", s.db)).
+		Msg("connected to database")
 
 	return s.db, nil
 }
 
 func (s ArangoDBStorage) createCollection(ctx context.Context, name string, options *adb.CreateCollectionOptions) error {
+	// ll := logger.With().Str("method", "createCollection").Logger()
+
 	db, err := s.getDatabase(ctx)
 	if err != nil {
 		return err
@@ -151,7 +172,9 @@ func (s ArangoDBStorage) createCollection(ctx context.Context, name string, opti
 }
 
 func (s ArangoDBStorage) getCollection(ctx context.Context, name string) (adb.Collection, error) {
-	logger.Debug().
+	ll := logger.With().Str("method", "getCollection").Logger()
+
+	ll.Debug().
 		Str("database", fmt.Sprintf("%#v", s.db)).
 		Msg("before getDatabase")
 	var err error
@@ -162,7 +185,7 @@ func (s ArangoDBStorage) getCollection(ctx context.Context, name string) (adb.Co
 		}
 	}
 
-	logger.Debug().
+	ll.Debug().
 		Str("database", fmt.Sprintf("%#v", s.db)).
 		Msg("after getDatabase")
 
@@ -170,7 +193,7 @@ func (s ArangoDBStorage) getCollection(ctx context.Context, name string) (adb.Co
 	if err != nil {
 		return nil, err
 	}
-	logger.Debug().
+	ll.Debug().
 		Str("collection", fmt.Sprintf("%#v", coll)).
 		Msg("retrieved collection")
 
@@ -178,18 +201,29 @@ func (s ArangoDBStorage) getCollection(ctx context.Context, name string) (adb.Co
 }
 
 func (s ArangoDBStorage) getDatabase(ctx context.Context) (adb.Database, error) {
-	logger.Debug().
-		Str("method", "getDatabase").
-		Str("s", fmt.Sprintf("%#v", s)).Msg("ArangoDBStorage object")
-	logger.Debug().
-		Str("method", "getDatabase").
-		Str("s.db", fmt.Sprintf("%#v", s.db)).Msg("stored database")
-	logger.Debug().
-		Str("method", "getDatabase").
-		Str("s.client", fmt.Sprintf("%#v", s.client)).Msg("stored client")
+	ll := logger.With().Str("method", "getDatabase").Logger()
+
+	ll.Debug().
+		Str("s", fmt.Sprintf("%#v", s)).
+		Msg("ArangoDBStorage object")
+	ll.Debug().
+		Str("s.db", fmt.Sprintf("%#v", s.db)).
+		Msg("stored database")
+	ll.Debug().
+		Str("s.client", fmt.Sprintf("%#v", s.client)).
+		Msg("stored client")
 	if s.db == nil {
+		e, err := s.client.DatabaseExists(ctx, s.config.Database)
+		if err != nil {
+			return nil, err
+		}
+		if e != true {
+			err := new(DatabaseDoesNotExistError)
+			err.db = s.config.Database
+			return nil, err
+		}
 		db, err := s.client.Database(ctx, s.config.Database)
-		logger.Debug().
+		ll.Debug().
 			Str("database", fmt.Sprintf("%#v", db)).
 			Msg("retrieved database")
 		if err != nil {
@@ -197,87 +231,74 @@ func (s ArangoDBStorage) getDatabase(ctx context.Context) (adb.Database, error) 
 		}
 		s.db = db
 	}
-	logger.Debug().
+	ll.Debug().
 		Str("s.db", fmt.Sprintf("%#v", s.db)).
 		Msg("stored database")
+
 	return s.db, nil
 }
 
 func (s ArangoDBStorage) getClient() (adb.Client, error) {
+	ll := logger.With().Str("method", "getClient").Logger()
+	if s.client == nil {
+		cc, err := s.getClientConfig()
+		if err != nil {
+			return nil, err
+		}
+		client, err := adb.NewClient(*cc)
+		if err != nil {
+			return nil, err
+		}
+		ll.Debug().
+			Str("client", fmt.Sprintf("%#v", client)).
+			Msg("new client")
+		s.client = client
+	}
+	ll.Debug().
+		Str("s.client", fmt.Sprintf("%#v", s.client)).
+		Msg("stored client")
+
 	return nil, nil
 }
 
-func (s ArangoDBStorage) SetupClient() error {
-	var err error
-
-	logger.Debug().
-		Strs("endpoints", s.config.Endpoints).
-		Msg("creating connection")
-	s.conn, err = http.NewConnection(http.ConnectionConfig{
-		Endpoints: s.config.Endpoints,
-	})
-	if err != nil {
-		return err
-	}
-	logger.Debug().
-		Str("connection", fmt.Sprintf("%#v", s.conn)).
-		Msg("connection info")
-
-	s.client_config = adb.ClientConfig{
-		Connection: s.conn,
-	}
-	if s.config.Auth == true {
-		logger.Debug().
-			Str("auth_type", fmt.Sprintf("%#v", s.config.AuthType)).
-			Msg("using auth")
-		switch s.config.AuthType {
-		case adb.AuthenticationTypeBasic:
-			s.client_config.Authentication = adb.BasicAuthentication(s.config.Username, s.config.Password)
-		case adb.AuthenticationTypeJWT:
-			s.client_config.Authentication = adb.JWTAuthentication(s.config.Username, s.config.Password)
-		default:
-			err := new(UnknownAuthMethodError)
-			return err
+func (s ArangoDBStorage) getClientConfig() (*adb.ClientConfig, error) {
+	ll := logger.With().Str("method", "getClientConfig").Logger()
+	if s.clientConfig == nil {
+		cc := adb.ClientConfig{
+			Connection: s.conn,
 		}
-	}
-	logger.Debug().
-		Str("client_config", fmt.Sprintf("%#v", s.client_config)).
-		Msg("config info")
+		if s.config.Auth == true {
+			ll.Debug().
+				Str("auth_type", fmt.Sprintf("%#v", s.config.AuthType)).
+				Msg("using auth")
+			switch s.config.AuthType {
+			case adb.AuthenticationTypeBasic:
+				cc.Authentication = adb.BasicAuthentication(s.config.Username, s.config.Password)
+			case adb.AuthenticationTypeJWT:
+				cc.Authentication = adb.JWTAuthentication(s.config.Username, s.config.Password)
+			default:
+				err := new(UnknownAuthMethodError)
+				return nil, err
+			}
+		}
+		ll.Debug().
+			Str("cc", fmt.Sprintf("%#v", cc)).
+			Msg("new client config")
 
-	s.client, err = adb.NewClient(s.client_config)
-	if err != nil {
-		return err
+		s.clientConfig = &cc
 	}
-	logger.Debug().
-		Str("client", fmt.Sprintf("%#v", s.client)).
-		Msg("client info")
+	ll.Debug().
+		Str("clientConfig", fmt.Sprintf("%#v", s.clientConfig)).
+		Msg("stored client config")
 
-	ctx := context.Background()
-	defer ctx.Done()
-	e, err := s.client.DatabaseExists(ctx, s.config.Database)
-	if err != nil {
-		return err
-	}
-	if e != true {
-		err := new(DatabaseDoesNotExistError)
-		err.db = s.config.Database
-		return err
-	}
-	logger.Info().
-		Str("database_exists", fmt.Sprintf("%#v", e)).
-		Msg("connected to server")
-
-	logger.Debug().
-		Str("method", "SetupClient").
-		Str("s", fmt.Sprintf("%#v", s)).Msg("ArangoDBStorage object")
-
-	return nil
+	return s.clientConfig, nil
 }
 
 func (s ArangoDBStorage) InitDB() error {
-	zlog.Info()
+	ll := logger.With().Str("method", "InitDB").Logger()
 	for _, c := range s.collMap {
 		ctx := context.Background()
+		ll.Info().Str("collection", c).Msg("calling createCollection")
 		if err := s.createCollection(ctx, c, nil); err != nil {
 			return err
 		}

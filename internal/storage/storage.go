@@ -19,6 +19,5 @@ type (
 		List(itemType string, offset int, limit int) (StorageItems, error)
 
 		InitDB() error
-		SetupClient() error
 	}
 )
