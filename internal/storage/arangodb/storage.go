@@ -151,9 +151,20 @@ func (s ArangoDBStorage) connect(ctx context.Context) (adb.Database, error) {
 	return s.db, nil
 }
 
-func (s ArangoDBStorage) createCollection(ctx context.Context, name string, options *adb.CreateCollectionOptions) error {
-	// ll := logger.With().Str("method", "createCollection").Logger()
-
+func (s ArangoDBStorage) createCollection(name string, options *adb.CreateCollectionOptions) error {
+	ll := logger.With().Str("method", "createCollection").Logger()
+	cc, err := s.getClientConfig()
+	if err != nil {
+		return err
+	}
+	ll.Info().Str("cc", fmt.Sprintf("%#v", cc)).Msg("")
+	c, err := s.getClient()
+	if err != nil {
+		return err
+	}
+	ll.Info().Str("c", fmt.Sprintf("%#v", c)).Msg("")
+	ctx := context.TODO()
+	defer ctx.Done()
 	db, err := s.getDatabase(ctx)
 	if err != nil {
 		return err
@@ -258,7 +269,7 @@ func (s ArangoDBStorage) getClient() (adb.Client, error) {
 		Str("s.client", fmt.Sprintf("%#v", s.client)).
 		Msg("stored client")
 
-	return nil, nil
+	return s.client, nil
 }
 
 func (s ArangoDBStorage) getClientConfig() (*adb.ClientConfig, error) {
@@ -297,9 +308,8 @@ func (s ArangoDBStorage) getClientConfig() (*adb.ClientConfig, error) {
 func (s ArangoDBStorage) InitDB() error {
 	ll := logger.With().Str("method", "InitDB").Logger()
 	for _, c := range s.collMap {
-		ctx := context.Background()
 		ll.Info().Str("collection", c).Msg("calling createCollection")
-		if err := s.createCollection(ctx, c, nil); err != nil {
+		if err := s.createCollection(c, nil); err != nil {
 			return err
 		}
 	}
