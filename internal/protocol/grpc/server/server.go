@@ -39,16 +39,16 @@ func New(c *Config) (Server, error) {
 		return nil, err
 	}
 
-	return s, nil
+	return &s, nil
 }
 
-func (s server) RegisterServices() error {
+func (s *server) RegisterServices() error {
 	wp := v0service.NewWebPageServiceServer(&s.storage)
 	v0api.RegisterWebPageServiceServer(s.grpcServer, wp)
 	return nil
 }
 
-func (s server) Start() error {
+func (s *server) Start() error {
 	listen, err := net.Listen("tcp", fmt.Sprintf("%s:%s", s.config.Bind, s.config.Port))
 	if err != nil {
 		return err
@@ -57,14 +57,14 @@ func (s server) Start() error {
 	return s.grpcServer.Serve(listen)
 }
 
-func (s server) Shutdown(ctx context.Context) error {
+func (s *server) Shutdown(ctx context.Context) error {
 	log.Info().Msg("stopping gRPC server...")
 	s.grpcServer.GracefulStop()
 	<-ctx.Done()
 	return nil
 }
 
-func (s server) setupStorage() error {
+func (s *server) setupStorage() error {
 	switch s.config.StorageBackend {
 	case "arangodb":
 		c := new(arangodb.Config)
@@ -76,7 +76,11 @@ func (s server) setupStorage() error {
 		c.Password = "password"
 		c.Auth = true
 		c.AuthType = driver.AuthenticationTypeBasic
-		s.storage = arangodb.NewArangoDBStorage(*c)
+		var err error
+		s.storage, err = arangodb.NewArangoDBStorage(*c)
+		if err != nil {
+			log.Fatal().Err(err)
+		}
 	}
 
 	if err := s.storage.InitDB(); err != nil {

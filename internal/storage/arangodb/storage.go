@@ -3,12 +3,10 @@ package arangodb
 import (
 	"context"
 	"fmt"
-	"log"
 	"sync"
 
 	adb "github.com/arangodb/go-driver"
 	"github.com/arangodb/go-driver/http"
-	"github.com/jinzhu/copier"
 	"github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
 
@@ -25,6 +23,7 @@ type (
 		auth     adb.Authentication
 		config       Config
 		collMap      map[string]string
+		db adb.Database
 	}
 
 	Config struct {
@@ -93,7 +92,7 @@ func NewArangoDBStorage(config Config) (*Storage, error) {
 	return &store, nil
 }
 
-func (s Storage) connect(ctx context.Context) (adb.Database, error) {
+func (s *Storage) connect(ctx context.Context) (adb.Database, error) {
 	ll := logger.With().Str("method", "createCollection").Logger()
 	conn, err := s.getConnection()
 	if err != nil {
@@ -118,32 +117,33 @@ func (s Storage) connect(ctx context.Context) (adb.Database, error) {
 	return db, nil
 }
 
-func (s Storage) createCollection(name string, options *adb.CreateCollectionOptions) error {
+func (s *Storage) createCollection(name string, options *adb.CreateCollectionOptions) error {
+	ll := logger.With().Str("method", "createCollection").Logger()
 	ctx := context.TODO()
 	defer ctx.Done()
-	db, err := s.connect(ctx)
-	if err != nil {
-		return err
-	}
-
-	e, err := db.CollectionExists(ctx, name)
+	//db, err := s.connect(ctx)
+	//if err != nil {
+	//	return err
+	//}
+	ll.Debug().Str("store", fmt.Sprintf("%#v", s)).Msg("store inside createCollection")
+	e, err := s.db.CollectionExists(ctx, name)
 	if err != nil {
 		return err
 	}
 	var c_err error
 	if e != true {
-		_, c_err = db.CreateCollection(ctx, name, options)
+		_, c_err = s.db.CreateCollection(ctx, name, options)
 	}
 
 	return c_err
 }
 
-func (s Storage) getCollection(ctx context.Context, client adb.Client, name string) (adb.Collection, error) {
+func (s *Storage) getCollection(ctx context.Context, client adb.Client, name string) (adb.Collection, error) {
 	ll := logger.With().Str("method", "getCollection").Logger()
 
 	var err error
-		db, err := s.getDatabase(ctx, client)
-		if err != nil {
+	db, err := s.getDatabase(ctx, client)
+	if err != nil {
 			return nil, err
 		}
 
@@ -163,7 +163,7 @@ func (s Storage) getCollection(ctx context.Context, client adb.Client, name stri
 	return coll, nil
 }
 
-func (s Storage) getDatabase(ctx context.Context, c adb.Client) (adb.Database, error) {
+func (s *Storage) getDatabase(ctx context.Context, c adb.Client) (adb.Database, error) {
 	ll := logger.With().Str("method", "getDatabase").Logger()
 
 		e, err := c.DatabaseExists(ctx, s.config.Database)
@@ -186,7 +186,7 @@ func (s Storage) getDatabase(ctx context.Context, c adb.Client) (adb.Database, e
 	return db, nil
 }
 
-func (s Storage) getClient(cc *adb.ClientConfig) (adb.Client, error) {
+func (s *Storage) getClient(cc *adb.ClientConfig) (adb.Client, error) {
 	ll := logger.With().Str("method", "getClient").Logger()
 
 	client, err := adb.NewClient(*cc)
@@ -200,7 +200,7 @@ func (s Storage) getClient(cc *adb.ClientConfig) (adb.Client, error) {
 	return client, nil
 }
 
-func (s Storage) getClientConfig(conn adb.Connection) (*adb.ClientConfig, error) {
+func (s *Storage) getClientConfig(conn adb.Connection) (*adb.ClientConfig, error) {
 	ll := logger.With().Str("method", "getClientConfig").Logger()
 
 		cc := adb.ClientConfig{
@@ -216,7 +216,7 @@ func (s Storage) getClientConfig(conn adb.Connection) (*adb.ClientConfig, error)
 	return &cc, nil
 }
 
-func (s Storage) getConnection() (adb.Connection, error) {
+func (s *Storage) getConnection() (adb.Connection, error) {
 	conn, err := http.NewConnection(http.ConnectionConfig{
 		Endpoints: s.config.Endpoints,
 	})
@@ -226,17 +226,26 @@ func (s Storage) getConnection() (adb.Connection, error) {
 	return conn, nil
 }
 
-func (s Storage) NewCollection(name string) (Collection) {
+func (s *Storage) NewCollection(name string) (Collection) {
 	c := Collection{
-		store: &s,
+		store: s,
 		name: name,
 	}
 
 	return c
 }
 
-func (s Storage) InitDB() error {
+func (s *Storage) Connect(ctx context.Context) error {
+	ll := logger.With().Str("method", "Connect").Logger()
+	var err error
+	s.db, err = s.connect(ctx)
+	ll.Debug().Str("s.db", fmt.Sprintf("%#v", s.db))
+	return err
+}
+
+func (s *Storage) InitDB() error {
 	ll := logger.With().Str("method", "InitDB").Logger()
+	ll.Debug().Str("store", fmt.Sprintf("%#v", s)).Msg("store inside InitDB")
 	for _, c := range s.collMap {
 		ll.Info().Str("collection", c).Msg("calling createCollection")
 		if err := s.createCollection(c, nil); err != nil {
@@ -246,190 +255,8 @@ func (s Storage) InitDB() error {
 	return nil
 }
 
-func (s Storage) Create(item storage.StorageItem) (storage.StorageMeta, error) {
-	log.Printf("s.Create() T(i): %T", item)
-	log.Printf("arangodb.CreateWebPage() before getCollection s: %+v", s)
-	ctx := context.TODO()
-	defer ctx.Done()
-	itemType := fmt.Sprintf("%T", item)
-	collName, ok := s.collMap[itemType]
-	if !ok {
-		err := new(UnknownCollectionError)
-		err.coll = itemType
-		return nil, err
-	}
-
-	db, err := s.connect(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	coll, err := db.Collection(ctx, collName)
-	log.Printf("arangodb.CreateWebPage() coll: %+v", coll)
-	log.Printf("arangodb.CreateWebPage() after getCollections s: %+v", s)
-	if err != nil {
-		return nil, err
-	}
-
-	adbMeta, err := coll.CreateDocument(ctx, item.GetData())
-	if err != nil {
-		return nil, err
-	}
-
-	var meta DocumentMeta
-
-	err = copier.Copy(&meta, adbMeta)
-	if err != nil {
-		return nil, err
-	}
-
-	return &meta, nil
-
-}
-
-func (s Storage) Read(key string, itemType string) (storage.StorageItem, storage.StorageMeta, error) {
-	ctx := context.Background()
-	collName, ok := s.collMap[itemType]
-	if !ok {
-		err := new(UnknownCollectionError)
-		err.coll = itemType
-		return nil, nil, err
-	}
-	db, err := s.connect(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	coll, err := db.Collection(ctx, collName)
-	if err != nil {
-		return nil, nil, err
-	}
-	item, err := makeStorageItem(collName)
-	if err != nil {
-		return nil, nil, err
-	}
-	adbMeta, err := coll.ReadDocument(ctx, key, item)
-	log.Printf("Meta: %+v", adbMeta)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	var meta DocumentMeta
-
-	err = copier.Copy(&meta, adbMeta)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return item, meta, nil
-}
-
-func (s Storage) Update(key string, data map[string]interface{}, itemType string) (storage.StorageMeta, error) {
-	ctx := context.Background()
-	collName, ok := s.collMap[itemType]
-	if !ok {
-		err := new(UnknownCollectionError)
-		err.coll = itemType
-		return nil, err
-	}
-	db, err := s.connect(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	coll, err := db.Collection(ctx, collName)
-	if err != nil {
-		return nil, err
-	}
-
-	adbMeta, err := coll.UpdateDocument(ctx, key, data)
-	if err != nil {
-		return nil, err
-	}
-
-	var meta DocumentMeta
-
-	err = copier.Copy(&meta, adbMeta)
-	if err != nil {
-		return nil, err
-	}
-
-	return &meta, nil
-}
-
-func (s Storage) Delete(key string, itemType string) (storage.StorageMeta, error) {
-	ctx := context.Background()
-	collName, ok := s.collMap[itemType]
-	if !ok {
-		err := new(UnknownCollectionError)
-		err.coll = itemType
-		return nil, err
-	}
-	db, err := s.connect(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	coll, err := db.Collection(ctx, collName)
-	if err != nil {
-		return nil, err
-	}
-
-	adbMeta, err := coll.RemoveDocument(ctx, key)
-	if err != nil {
-		return nil, err
-	}
-
-	var meta DocumentMeta
-
-	err = copier.Copy(&meta, adbMeta)
-	if err != nil {
-		return nil, err
-	}
-
-	return &meta, nil
-}
-
-func (s Storage) List(itemType string, offset int, limit int) (storage.StorageItems, error) {
-	ctx := context.Background()
-	collName, ok := s.collMap[itemType]
-	if !ok {
-		err := new(UnknownCollectionError)
-		err.coll = itemType
-		return nil, err
-	}
-	db, err := s.connect(ctx)
-	if err != nil {
-		return nil, err
-	}
-	// TODO: Protobuf is only returning keys, need to reconcile returning data here
-	q := fmt.Sprintf("FOR i IN %s SORT i._key LIMIT %d, %d RETURN i", collName, offset, limit)
-	cur, err := db.Query(ctx, q, nil)
-	if err != nil {
-		return nil, err
-	}
-	zlog.Debug().Fields(map[string]interface{}{"query": q, "num_results": cur.Count()})
-	items := make(storage.StorageItems, 0)
-	for {
-		item, err := makeStorageItem(collName)
-		if err != nil {
-			return nil, err
-		}
-		// TODO: Integrate DB metadata into StorageItem
-		_, err = cur.ReadDocument(ctx, &item)
-		zlog.Debug().Fields(map[string]interface{}{"cursor_stats": cur.Statistics()})
-		items = append(items, item)
-		if adb.IsNoMoreDocuments(err) {
-			break
-		} else if err != nil {
-			return items, err
-		}
-	}
-	return items, nil
-}
-
-func (c Collection) CreateItems(ctx context.Context, items storage.StorageItems) (storage.StorageItems, error) {
-	db, err := c.store.connect(ctx)
+func (c *Collection) CreateItems(ctx context.Context, items storage.StorageItems) (storage.StorageItems, error) {
+/*	db, err := c.store.connect(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -449,12 +276,12 @@ func (c Collection) CreateItems(ctx context.Context, items storage.StorageItems)
 	err = copier.Copy(&meta, adbMetas)
 	if err != nil {
 		return nil, err
-	}
+	}*/
 	return nil, nil
 }
 
-func (c Collection) ReadItems(ctx context.Context, keys []string) (storage.StorageItems, error) {
-	db, err := c.store.connect(ctx)
+func (c *Collection) ReadItems(ctx context.Context, keys []string) (storage.StorageItems, error) {
+/*	db, err := c.store.connect(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -471,13 +298,13 @@ func (c Collection) ReadItems(ctx context.Context, keys []string) (storage.Stora
 	log.Printf("Meta: %+v", adbMeta)
 	if err != nil {
 		return nil, err
-	}
+	}*/
 
 	return nil, nil
 }
 
-func (c Collection) UpdateItems(ctx context.Context, data map[string]map[string]interface{}) (storage.StorageItems, error) {
-	db, err := c.store.connect(ctx)
+func (c *Collection) UpdateItems(ctx context.Context, data map[string]map[string]interface{}) (storage.StorageItems, error) {
+	/*db, err := c.store.connect(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -497,12 +324,12 @@ func (c Collection) UpdateItems(ctx context.Context, data map[string]map[string]
 	err = copier.Copy(&meta, adbMeta)
 	if err != nil {
 		return nil, err
-	}
+	}*/
 	return nil, nil
 }
 
-func (c Collection) DeleteItems(ctx context.Context, keys []string) (storage.StorageItems, error) {
-	db, err := c.store.connect(ctx)
+func (c *Collection) DeleteItems(ctx context.Context, keys []string) (storage.StorageItems, error) {
+	/*db, err := c.store.connect(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -521,12 +348,12 @@ func (c Collection) DeleteItems(ctx context.Context, keys []string) (storage.Sto
 	err = copier.Copy(&meta, adbMeta)
 	if err != nil {
 		return nil, err
-	}
+	}*/
 	return nil, nil
 }
 
-func (c Collection) ListItems(ctx context.Context, offset int, limit int) (storage.StorageItems, error) {
-	db, err := c.store.connect(ctx)
+func (c *Collection) ListItems(ctx context.Context, offset int, limit int) (storage.StorageItems, error) {
+	/*db, err := c.store.connect(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -552,10 +379,10 @@ func (c Collection) ListItems(ctx context.Context, offset int, limit int) (stora
 		} else if err != nil {
 			return items, err
 		}
-	}
-	return items, nil
+	}*/
+	return nil, nil
 }
 
-func (d DocumentMeta) GetMeta() interface{} {
+func (d *DocumentMeta) GetMeta() interface{} {
 	return d
 }

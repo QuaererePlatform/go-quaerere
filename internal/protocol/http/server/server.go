@@ -8,6 +8,7 @@ import (
 	"github.com/arangodb/go-driver"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/rs/zerolog/log"
 
 	"github.com/QuaererePlatform/go-quaerere/internal/protocol/http/server/handlers/kootenay"
 	"github.com/QuaererePlatform/go-quaerere/internal/storage"
@@ -100,7 +101,11 @@ func (s *server) setupStorage() error {
 		c.Password = "password"
 		c.Auth = true
 		c.AuthType = driver.AuthenticationTypeBasic
-		s.storage = arangodb.NewArangoDBStorage(*c)
+		var err error
+		s.storage, err = arangodb.NewArangoDBStorage(*c)
+		if err != nil {
+			log.Fatal().Err(err)
+		}
 	}
 
 	if err := s.storage.InitDB(); err != nil {

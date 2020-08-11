@@ -14,7 +14,7 @@ type (
 	}
 )
 
-func (h Handler) WrapError(err error, s string, c echo.Context) error {
+func (h *Handler) WrapError(err error, s string, c echo.Context) error {
 	if s != "" {
 		return errors.New(s + ": " + err.Error())
 	}

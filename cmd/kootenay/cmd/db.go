@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -37,7 +38,7 @@ func dbInit(cmd *cobra.Command, args []string) {
 	c := new(dbInitConfig)
 
 	if err := viper.Unmarshal(c); err != nil {
-		log.Fatal().Err(err)
+		log.Fatal().Err(err).Msg("viper unmarshal error")
 	}
 	log.Debug().Fields(map[string]interface{}{"config": fmt.Sprintf("%#v", c)}).Msg("loaded config")
 
@@ -64,10 +65,27 @@ func dbInit(cmd *cobra.Command, args []string) {
 		c.Password = "password"
 		c.Auth = true
 		c.AuthType = driver.AuthenticationTypeBasic
-		store = arangodb.NewArangoDBStorage(*c)
+		var err error
+		store, err = arangodb.NewArangoDBStorage(*c)
+		if err != nil {
+			log.Fatal().Err(err)
+		}
 	}
 
+	log.Debug().Str("store", fmt.Sprintf("%#v", store)).Msg("newly created store")
 	if store != nil {
+		ctx := context.Background()
+		ctxWithCancel, cancelFunction := context.WithCancel(ctx)
+
+		defer func() {
+			log.Info().Msg("Main Defer: canceling context")
+			cancelFunction()
+		}()
+
+		if err := store.Connect(ctxWithCancel); err != nil {
+			log.Fatal().Err(err).Msg("error connecting to database")
+		}
+		log.Debug().Str("store", fmt.Sprintf("%#v", store)).Msg("store after Connect()")
 		if err := store.InitDB(); err != nil {
 			log.Fatal().Err(err).Msg("error initializing database")
 		}

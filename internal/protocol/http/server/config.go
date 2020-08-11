@@ -12,7 +12,7 @@ type (
 	}
 )
 
-func (c Config) IsValid(errors validator.Error) {
+func (c *Config) IsValid(errors validator.Error) {
 	if c.AppEnv == nil {
 		errors.Add("app environment not configured")
 	}
