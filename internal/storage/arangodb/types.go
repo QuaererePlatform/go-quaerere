@@ -3,6 +3,8 @@ package arangodb
 import (
 	"time"
 
+	"github.com/arangodb/go-driver"
+
 	"github.com/QuaererePlatform/go-quaerere/internal/common"
 )
 
@@ -25,3 +27,11 @@ type (
 		URL              common.StringURL   `json:"url,string"`
 	}
 )
+
+type DocumentMeta struct {
+	driver.DocumentMeta
+}
+
+func (d *DocumentMeta) GetMeta() interface{} {
+	return d
+}

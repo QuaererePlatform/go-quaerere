@@ -17,6 +17,7 @@ type (
 
 	StorageDriver interface {
 		Connect(ctx context.Context) error
+		GetCollection(ctx context.Context, name string) (CollectionStorage, error)
 		InitDB() error
 	}
 

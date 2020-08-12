@@ -40,13 +40,13 @@ func dbInit(cmd *cobra.Command, args []string) {
 	if err := viper.Unmarshal(c); err != nil {
 		log.Fatal().Err(err).Msg("viper unmarshal error")
 	}
-	log.Debug().Fields(map[string]interface{}{"config": fmt.Sprintf("%#v", c)}).Msg("loaded config")
 
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	if c.DebugMode {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 	log.Debug().Msg("Debug enabled")
+	log.Debug().Str("config", fmt.Sprintf("%#v", c)).Msg("loaded config")
 
 	if strings.ToLower(*c.AppEnv) == "development" {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
@@ -78,7 +78,7 @@ func dbInit(cmd *cobra.Command, args []string) {
 		ctxWithCancel, cancelFunction := context.WithCancel(ctx)
 
 		defer func() {
-			log.Info().Msg("Main Defer: canceling context")
+			log.Debug().Msg("Main Defer: canceling context")
 			cancelFunction()
 		}()
 
