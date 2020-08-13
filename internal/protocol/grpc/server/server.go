@@ -24,7 +24,7 @@ type (
 	server struct {
 		config     *Config
 		grpcServer *grpc.Server
-		storage    storage.StorageDriver
+		storage    storage.Driver
 	}
 )
 

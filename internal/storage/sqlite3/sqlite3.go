@@ -31,18 +31,18 @@ func NewSQLStorage(config Config) (*SQLStorage, error) {
 	return &db, nil
 }
 
-func (s SQLStorage) Create(i storage.StorageItem) (storage.StorageMeta, error) {
+func (s SQLStorage) Create(i storage.Item) (storage.Meta, error) {
 	return nil, nil
 }
 
-func (s SQLStorage) Read(key string) (storage.StorageItem, error) {
+func (s SQLStorage) Read(key string) (storage.Item, error) {
 	return nil, nil
 }
 
-func (s SQLStorage) Update(string, map[string]interface{}) (storage.StorageMeta, error) {
+func (s SQLStorage) Update(string, map[string]interface{}) (storage.Meta, error) {
 	return nil, nil
 }
 
-func (s SQLStorage) Delete(string) (storage.StorageMeta, error) {
+func (s SQLStorage) Delete(string) (storage.Meta, error) {
 	return nil, nil
 }

@@ -24,15 +24,6 @@ type (
 		cTypeMap map[string]reflect.Type
 		cOptions map[string]*driver.CreateCollectionOptions
 	}
-
-	Config struct {
-		Endpoints []string
-		Database  string
-		Username  string
-		Password  string
-		AuthType  driver.AuthenticationType
-		Auth      bool
-	}
 )
 
 const WEB_PAGE_COLLECTION = "WebPages"
@@ -82,7 +73,7 @@ func NewArangoDBStorage(config Config) (*Storage, error) {
 	return &store, nil
 }
 
-func (s *Storage) GetCollection(ctx context.Context, name string) (storage.CollectionStorage, error) {
+func (s *Storage) GetCollection(ctx context.Context, name string) (storage.Collection, error) {
 	cType, ok := s.cTypeMap[name]
 	if !ok {
 		err := new(UnknownCollectionError)

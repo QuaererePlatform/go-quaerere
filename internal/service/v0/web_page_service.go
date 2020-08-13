@@ -11,7 +11,7 @@ import (
 const apiVersion = "v0"
 
 type webPageServiceServer struct {
-	storage *storage.StorageDriver
+	storage *storage.Driver
 }
 
 func (s *webPageServiceServer) CreateWebPage(ctx context.Context, req *v0.CreateWebPageRequest) (*v0.CreateWebPageResponse, error) {
@@ -46,6 +46,6 @@ func (s *webPageServiceServer) ListWebPages(ctx context.Context, request *v0.Lis
 	return nil
 }*/
 
-func NewWebPageServiceServer(s *storage.StorageDriver) v0.WebPageServiceServer {
+func NewWebPageServiceServer(s *storage.Driver) v0.WebPageServiceServer {
 	return &webPageServiceServer{storage: s}
 }

@@ -52,7 +52,7 @@ func dbInit(cmd *cobra.Command, args []string) {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
-	var store storage.StorageDriver
+	var store storage.Driver
 
 	switch c.StorageBackend {
 	case "arangodb":

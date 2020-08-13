@@ -10,7 +10,7 @@ import (
 
 type (
 	Handler struct {
-		Storage *storage.StorageDriver
+		Storage *storage.Driver
 	}
 )
 

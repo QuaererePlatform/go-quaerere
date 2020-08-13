@@ -46,7 +46,7 @@ type (
 	}
 )
 
-func (w *WebPageHandler) Post(s storage.StorageDriver) echo.HandlerFunc {
+func (w *WebPageHandler) Post(s storage.Driver) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		/*		log.Printf("WebPageHandler.Post() s: %+v", s)
 				wp := new(WebPageRequest)
@@ -63,25 +63,25 @@ func (w *WebPageHandler) Post(s storage.StorageDriver) echo.HandlerFunc {
 	}
 }
 
-func (w *WebPageHandler) Delete(s storage.StorageDriver) echo.HandlerFunc {
+func (w *WebPageHandler) Delete(s storage.Driver) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		return nil
 	}
 }
 
-func (w *WebPageHandler) List(s storage.StorageDriver) echo.HandlerFunc {
+func (w *WebPageHandler) List(s storage.Driver) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		return nil
 	}
 }
 
-func (w *WebPageHandler) Get(s storage.StorageDriver) echo.HandlerFunc {
+func (w *WebPageHandler) Get(s storage.Driver) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		return nil
 	}
 }
 
-func (w *WebPageHandler) Put(s storage.StorageDriver) echo.HandlerFunc {
+func (w *WebPageHandler) Put(s storage.Driver) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		return nil
 	}

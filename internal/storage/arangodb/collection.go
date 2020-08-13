@@ -16,7 +16,7 @@ type Collection struct {
 	cType   reflect.Type
 }
 
-func (c *Collection) CreateItems(ctx context.Context, items storage.StorageItems) (storage.StorageItems, error) {
+func (c *Collection) CreateItems(ctx context.Context, items storage.Items) (storage.Items, error) {
 	/*	db, err := c.store.connect(ctx)
 		if err != nil {
 			return nil, err
@@ -41,7 +41,7 @@ func (c *Collection) CreateItems(ctx context.Context, items storage.StorageItems
 	return nil, nil
 }
 
-func (c *Collection) ReadItems(ctx context.Context, keys []string) (storage.StorageItems, error) {
+func (c *Collection) ReadItems(ctx context.Context, keys []string) (storage.Items, error) {
 	/*	db, err := c.store.connect(ctx)
 		if err != nil {
 			return nil, err
@@ -64,7 +64,7 @@ func (c *Collection) ReadItems(ctx context.Context, keys []string) (storage.Stor
 	return nil, nil
 }
 
-func (c *Collection) UpdateItems(ctx context.Context, data map[string]map[string]interface{}) (storage.StorageItems, error) {
+func (c *Collection) UpdateItems(ctx context.Context, data map[string]map[string]interface{}) (storage.Items, error) {
 	/*db, err := c.store.connect(ctx)
 	if err != nil {
 		return nil, err
@@ -89,7 +89,7 @@ func (c *Collection) UpdateItems(ctx context.Context, data map[string]map[string
 	return nil, nil
 }
 
-func (c *Collection) DeleteItems(ctx context.Context, keys []string) (storage.StorageItems, error) {
+func (c *Collection) DeleteItems(ctx context.Context, keys []string) (storage.Items, error) {
 	/*db, err := c.store.connect(ctx)
 	if err != nil {
 		return nil, err
@@ -113,7 +113,7 @@ func (c *Collection) DeleteItems(ctx context.Context, keys []string) (storage.St
 	return nil, nil
 }
 
-func (c *Collection) ListItems(ctx context.Context, offset int, limit int) (storage.StorageItems, error) {
+func (c *Collection) ListItems(ctx context.Context, offset int, limit int) (storage.Items, error) {
 	/*db, err := c.store.connect(ctx)
 	if err != nil {
 		return nil, err
@@ -131,7 +131,7 @@ func (c *Collection) ListItems(ctx context.Context, offset int, limit int) (stor
 		if err != nil {
 			return nil, err
 		}
-		// TODO: Integrate DB metadata into StorageItem
+		// TODO: Integrate DB metadata into Item
 		_, err = cur.ReadDocument(ctx, &item)
 		zlog.Debug().Fields(map[string]interface{}{"cursor_stats": cur.Statistics()})
 		items = append(items, item)

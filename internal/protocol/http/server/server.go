@@ -29,7 +29,7 @@ type (
 	server struct {
 		config     *Config
 		httpServer *echo.Echo
-		storage    storage.StorageDriver
+		storage    storage.Driver
 	}
 )
 
