@@ -15,7 +15,7 @@ type (
 )
 
 func (e DatabaseDoesNotExistError) Error() string {
-	return fmt.Sprintf("requested database does not exist: %q", e.db)
+	return fmt.Sprintf("requested database does not exist: %s", e.db)
 }
 
 func (e UnknownAuthMethodError) Error() string {
@@ -23,5 +23,5 @@ func (e UnknownAuthMethodError) Error() string {
 }
 
 func (e UnknownCollectionError) Error() string {
-	return fmt.Sprintf("unknown collection: %q", e.coll)
+	return fmt.Sprintf("unknown collection: %s", e.coll)
 }

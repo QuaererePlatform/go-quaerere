@@ -35,7 +35,6 @@ type (
 )
 
 func MakeBackend(backend string) (Driver, error) {
-	var store Driver
 
 	switch backend {
 	case "arangodb":
@@ -48,11 +47,14 @@ func MakeBackend(backend string) (Driver, error) {
 		c.Password = "password"
 		c.Auth = true
 		c.AuthType = driver.AuthenticationTypeBasic
-		var err error
-		store, err = arangodb.NewArangoDBStorage(*c)
+		store, err := arangodb.NewArangoDBStorage(*c)
 		if err != nil {
 			return nil, err
 		}
+		return store, nil
+	default:
+		err := new(UnknownStorageBackend)
+		err.backend = backend
+		return nil, err
 	}
-	return store, nil
 }
