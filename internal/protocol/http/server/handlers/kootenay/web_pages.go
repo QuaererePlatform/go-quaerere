@@ -7,7 +7,7 @@ import (
 
 	"github.com/QuaererePlatform/go-quaerere/internal/common"
 	"github.com/QuaererePlatform/go-quaerere/internal/protocol/http/server/handlers"
-	"github.com/QuaererePlatform/go-quaerere/internal/storage"
+	"github.com/QuaererePlatform/go-quaerere/internal/storage/drivers"
 )
 
 type (
@@ -46,7 +46,7 @@ type (
 	}
 )
 
-func (w *WebPageHandler) Post(s storage.Driver) echo.HandlerFunc {
+func (w *WebPageHandler) Post(s drivers.Driver) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		/*		log.Printf("WebPageHandler.Post() s: %+v", s)
 				wp := new(WebPageRequest)
@@ -63,25 +63,25 @@ func (w *WebPageHandler) Post(s storage.Driver) echo.HandlerFunc {
 	}
 }
 
-func (w *WebPageHandler) Delete(s storage.Driver) echo.HandlerFunc {
+func (w *WebPageHandler) Delete(s drivers.Driver) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		return nil
 	}
 }
 
-func (w *WebPageHandler) List(s storage.Driver) echo.HandlerFunc {
+func (w *WebPageHandler) List(s drivers.Driver) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		return nil
 	}
 }
 
-func (w *WebPageHandler) Get(s storage.Driver) echo.HandlerFunc {
+func (w *WebPageHandler) Get(s drivers.Driver) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		return nil
 	}
 }
 
-func (w *WebPageHandler) Put(s storage.Driver) echo.HandlerFunc {
+func (w *WebPageHandler) Put(s drivers.Driver) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		return nil
 	}

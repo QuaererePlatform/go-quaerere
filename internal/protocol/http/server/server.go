@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/arangodb/go-driver"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/rs/zerolog/log"
 
 	"github.com/QuaererePlatform/go-quaerere/internal/protocol/http/server/handlers/kootenay"
-	"github.com/QuaererePlatform/go-quaerere/internal/storage"
-	"github.com/QuaererePlatform/go-quaerere/internal/storage/arangodb"
+	"github.com/QuaererePlatform/go-quaerere/internal/storage/drivers"
 )
 
 const (
@@ -29,7 +27,7 @@ type (
 	server struct {
 		config     *Config
 		httpServer *echo.Echo
-		storage    storage.Driver
+		storage    drivers.Driver
 	}
 )
 
@@ -90,22 +88,10 @@ func (s *server) setupRoutes() {
 }
 
 func (s *server) setupStorage() error {
-	switch s.config.StorageBackend {
-	case "arangodb":
-		c := new(arangodb.Config)
-		c.Endpoints = []string{
-			"http://arangodb:8529/",
-		}
-		c.Database = "quaerere"
-		c.Username = "quaerere"
-		c.Password = "password"
-		c.Auth = true
-		c.AuthType = driver.AuthenticationTypeBasic
-		var err error
-		s.storage, err = arangodb.NewArangoDBStorage(*c)
-		if err != nil {
-			log.Fatal().Err(err)
-		}
+	var err error
+	s.storage, err = drivers.NewDriver(s.config.StorageBackend)
+	if err != nil {
+		log.Fatal().Err(err).Msg("error setting up datastore")
 	}
 
 	if err := s.storage.InitDB(); err != nil {

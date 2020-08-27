@@ -5,12 +5,12 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/QuaererePlatform/go-quaerere/internal/storage"
+	"github.com/QuaererePlatform/go-quaerere/internal/storage/drivers"
 )
 
 type (
 	Handler struct {
-		Storage *storage.Driver
+		Storage *drivers.Driver
 	}
 )
 

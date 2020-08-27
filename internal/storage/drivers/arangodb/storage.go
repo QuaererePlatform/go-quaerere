@@ -55,11 +55,11 @@ func NewArangoDBStorage(config Config) (*Storage, error) {
 			WEB_SITE_COLLECTION: nil,
 		},
 	}
-	if config.Auth == true {
+	if config.auth == true {
 		ll.Debug().
-			Str("auth_type", fmt.Sprintf("%#v", config.AuthType)).
+			Str("auth_type", fmt.Sprintf("%#v", config.authType)).
 			Msg("using auth")
-		switch config.AuthType {
+		switch config.authType {
 		case driver.AuthenticationTypeBasic:
 			store.auth = driver.BasicAuthentication(config.Username, config.Password)
 		case driver.AuthenticationTypeJWT:
@@ -105,7 +105,7 @@ func (s *Storage) Connect(ctx context.Context) error {
 	cc := driver.ClientConfig{
 		Connection: conn,
 	}
-	if s.config.Auth == true {
+	if s.config.auth == true {
 		cc.Authentication = s.auth
 	}
 	s.client, err = driver.NewClient(cc)

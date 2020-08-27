@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/arangodb/go-driver"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 
 	v0service "github.com/QuaererePlatform/go-quaerere/internal/service/v0"
-	"github.com/QuaererePlatform/go-quaerere/internal/storage"
-	"github.com/QuaererePlatform/go-quaerere/internal/storage/arangodb"
+	"github.com/QuaererePlatform/go-quaerere/internal/storage/drivers"
 	v0api "github.com/QuaererePlatform/go-quaerere/pkg/api/v0"
 )
 
@@ -24,7 +22,7 @@ type (
 	server struct {
 		config     *Config
 		grpcServer *grpc.Server
-		storage    storage.Driver
+		storage    drivers.Driver
 	}
 )
 
@@ -65,22 +63,10 @@ func (s *server) Shutdown(ctx context.Context) error {
 }
 
 func (s *server) setupStorage() error {
-	switch s.config.StorageBackend {
-	case "arangodb":
-		c := new(arangodb.Config)
-		c.Endpoints = []string{
-			"http://arangodb:8529/",
-		}
-		c.Database = "quaerere"
-		c.Username = "quaerere"
-		c.Password = "password"
-		c.Auth = true
-		c.AuthType = driver.AuthenticationTypeBasic
-		var err error
-		s.storage, err = arangodb.NewArangoDBStorage(*c)
-		if err != nil {
-			log.Fatal().Err(err)
-		}
+	var err error
+	s.storage, err = drivers.NewDriver(s.config.StorageBackend)
+	if err != nil {
+		log.Fatal().Err(err).Msg("error setting up datastore")
 	}
 
 	if err := s.storage.InitDB(); err != nil {

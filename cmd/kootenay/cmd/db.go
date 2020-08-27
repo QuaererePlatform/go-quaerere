@@ -6,14 +6,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/arangodb/go-driver"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/QuaererePlatform/go-quaerere/internal/storage"
-	"github.com/QuaererePlatform/go-quaerere/internal/storage/arangodb"
+	"github.com/QuaererePlatform/go-quaerere/internal/storage/drivers"
 )
 
 type (
@@ -52,24 +50,9 @@ func dbInit(cmd *cobra.Command, args []string) {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
-	var store storage.Driver
-
-	switch c.StorageBackend {
-	case "arangodb":
-		c := new(arangodb.Config)
-		c.Endpoints = []string{
-			"http://localhost:8529/",
-		}
-		c.Database = "quaerere"
-		c.Username = "quaerere"
-		c.Password = "password"
-		c.Auth = true
-		c.AuthType = driver.AuthenticationTypeBasic
-		var err error
-		store, err = arangodb.NewArangoDBStorage(*c)
-		if err != nil {
-			log.Fatal().Err(err)
-		}
+	store, err := drivers.NewDriver(c.StorageBackend)
+	if err != nil {
+		log.Fatal().Err(err).Msg("error setting up datastore")
 	}
 
 	log.Debug().Str("store", fmt.Sprintf("%#v", store)).Msg("newly created store")
