@@ -9,9 +9,6 @@ services:
       - "8529:8529"
     env_file:
       - ".env.arangodb"
-    volumes:
-      - "./.volumes/arangodb:/var/lib/arangodb3"
-      - "./.volumes/arangodb-apps:/var/lib/arangodb3-apps"
 
   columbia:
     build:

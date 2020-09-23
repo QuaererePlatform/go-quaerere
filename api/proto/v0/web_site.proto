@@ -1,0 +1,86 @@
+syntax = "proto3";
+package v0;
+option go_package = "pkg/api/v0;v0";
+
+import "accounting.proto";
+
+message WebSite {
+  string url = 1;
+  string in_language = 2;
+}
+
+message CreateWebSiteRequest {
+  repeated WebSite web_sites = 1;
+}
+
+message CreateWebSiteResponse {
+  message Result {
+    string key = 1;
+    string error = 2;
+  }
+  repeated Result results = 1;
+}
+
+message ReadWebSiteRequest {
+  repeated string keys = 1;
+  enum Fields {
+    URL = 0;
+    IN_LANGUAGE = 1;
+  }
+  repeated Fields fields = 2;
+}
+
+message ReadWebSiteResponse {
+  message Result {
+    string key = 1;
+    WebSite web_site = 2;
+    repeated SourceAccounting sources = 3;
+    string error = 4;
+  }
+  repeated Result results = 1;
+}
+
+message UpdateWebSiteRequest {
+  message Updates {
+    string key = 1;
+    WebSite web_site = 2;
+  }
+  repeated Updates updates = 1;
+}
+
+message UpdateWebSiteResponse {
+  message Result {
+    string key = 1;
+    string error = 2;
+  }
+  repeated Result results = 1;
+}
+
+message DeleteWebSiteRequest {
+  repeated string keys = 1;
+}
+
+message DeleteWebSiteResponse {
+  message Result {
+    string key = 1;
+    string error = 2;
+  }
+  repeated Result results = 1;
+}
+
+message ListWebSiteRequest {
+  int32 num_results = 1;
+  int32 offset = 2;
+}
+
+message ListWebSiteResults {
+  repeated string keys = 1;
+}
+
+service WebSiteService {
+  rpc CreateWebSite(CreateWebSiteRequest) returns (CreateWebSiteResponse) {}
+  rpc ReadWebSite(ReadWebSiteRequest) returns (ReadWebSiteResponse) {}
+  rpc UpdateWebSite(UpdateWebSiteRequest) returns (UpdateWebSiteResponse) {}
+  rpc DeleteWebSite(DeleteWebSiteRequest) returns (DeleteWebSiteResponse) {}
+  rpc ListWebSites(ListWebSiteRequest) returns (ListWebSiteResults) {}
+}

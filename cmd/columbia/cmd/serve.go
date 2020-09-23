@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/QuaererePlatform/go-quaerere/internal/server"
+	"github.com/QuaererePlatform/go-quaerere/internal/protocol/http/server"
 )
 
 var serveCmd = &cobra.Command{
