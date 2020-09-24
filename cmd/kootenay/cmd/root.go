@@ -56,4 +56,14 @@ func initConfig() {
 
 	_ = viper.BindPFlag(ENV_FLAG_DEBUG, rootCommand.Flags().Lookup(FLAG_DEBUG))
 	_ = viper.BindPFlag(ENV_FLAG_STORAGE, rootCommand.Flags().Lookup(FLAG_STORAGE))
+
+	viper.SetConfigName("config")
+	viper.SetConfigType("toml")
+	viper.AddConfigPath("/etc/kootenay/")
+	viper.AddConfigPath("$HOME/.kootenay/")
+	viper.AddConfigPath(".")
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	}
 }
