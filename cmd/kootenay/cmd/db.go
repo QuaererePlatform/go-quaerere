@@ -11,15 +11,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/QuaererePlatform/go-quaerere/internal/config"
 	"github.com/QuaererePlatform/go-quaerere/internal/storage/drivers"
-)
-
-type (
-	dbInitConfig struct {
-		AppEnv         *string `mapstructure:"app_env"`
-		DebugMode      bool    `mapstructure:"debug_mode"`
-		StorageBackend string  `mapstructure:"storage_backend"`
-	}
 )
 
 var dbInitCommand = &cobra.Command{
@@ -33,7 +26,7 @@ func init() {
 }
 
 func dbInit(cmd *cobra.Command, args []string) {
-	c := new(dbInitConfig)
+	c := new(config.DBInitConfig)
 
 	if err := viper.Unmarshal(c); err != nil {
 		log.Fatal().Err(err).Msg("viper unmarshal error")
