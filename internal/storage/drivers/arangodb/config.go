@@ -20,11 +20,11 @@ const (
 )
 
 type Config struct {
-	ConfigAuthType string   `mapstructure:"datastore.arangodb.auth_type"`
-	Database       string   `mapstructure:"datastore.arangodb.database"`
-	Endpoints      []string `mapstructure:"datastore.arangodb.endpoints"`
-	Password       string   `mapstructure:"datastore.arangodb.password"`
-	Username       string   `mapstructure:"datastore.arangodb.username"`
+	ConfigAuthType string   `mapstructure:"auth_type"`
+	Database       string   `mapstructure:"database"`
+	Endpoints      []string `mapstructure:"endpoints"`
+	Password       string   `mapstructure:"password"`
+	Username       string   `mapstructure:"username"`
 	authType       driver.AuthenticationType
 	auth           bool
 }

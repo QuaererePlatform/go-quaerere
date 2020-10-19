@@ -36,4 +36,5 @@ services:
       - 8080:1323
     volumes:
       - ./:/webapp
+      - ./configs/kootenay.config.toml:/webapp/config.toml
     command: ["-c", "./build/docker/dev/kootenay/air.conf"]

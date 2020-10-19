@@ -43,7 +43,7 @@ func dbInit(cmd *cobra.Command, args []string) {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
-	store, err := drivers.NewDriver(c.StorageBackend)
+	store, err := drivers.NewDriver(&c.Datastore)
 	if err != nil {
 		log.Fatal().Err(err).Msg("error setting up datastore")
 	}
