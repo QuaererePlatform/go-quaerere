@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 2018 gRPC authors.
+ * Copyright 2017 gRPC authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,29 @@
  *
  */
 
-package grpcutil
+// This file contains wrappers for grpclog functions.
+// The transport package only logs to verbose level 2 by default.
 
-import (
-	"errors"
-	"strings"
-)
+package transport
 
-// ParseMethod splits service and method from the input. It expects format
-// "/service/method".
-//
-func ParseMethod(methodName string) (service, method string, _ error) {
-	if !strings.HasPrefix(methodName, "/") {
-		return "", "", errors.New("invalid method name: should start with /")
+import "google.golang.org/grpc/grpclog"
+
+const logLevel = 2
+
+func infof(format string, args ...interface{}) {
+	if grpclog.V(logLevel) {
+		grpclog.Infof(format, args...)
 	}
-	methodName = methodName[1:]
+}
 
-	pos := strings.LastIndex(methodName, "/")
-	if pos < 0 {
-		return "", "", errors.New("invalid method name: suffix /method is missing")
+func warningf(format string, args ...interface{}) {
+	if grpclog.V(logLevel) {
+		grpclog.Warningf(format, args...)
 	}
-	return methodName[:pos], methodName[pos+1:], nil
+}
+
+func errorf(format string, args ...interface{}) {
+	if grpclog.V(logLevel) {
+		grpclog.Errorf(format, args...)
+	}
 }
