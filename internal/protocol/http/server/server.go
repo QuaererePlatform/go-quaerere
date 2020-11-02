@@ -26,7 +26,7 @@ type (
 	}
 
 	server struct {
-		config        *Config
+		config        *config.HTTPConfig
 		httpServer    *echo.Echo
 		storage       drivers.Driver
 		storageConfig *drivers.Config

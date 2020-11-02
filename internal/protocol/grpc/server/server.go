@@ -21,7 +21,7 @@ type (
 	}
 
 	server struct {
-		config        *Config
+		config        *config.GRPCConfig
 		grpcServer    *grpc.Server
 		storage       drivers.Driver
 		storageConfig *drivers.Config

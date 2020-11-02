@@ -26,7 +26,7 @@ func init() {
 }
 
 func dbInit(cmd *cobra.Command, args []string) {
-	c := new(config.DBInitConfig)
+	c := new(config.AppConfig)
 
 	if err := viper.Unmarshal(c); err != nil {
 		log.Fatal().Err(err).Msg("viper unmarshal error")
@@ -43,7 +43,7 @@ func dbInit(cmd *cobra.Command, args []string) {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
-	store, err := drivers.NewDriver(&c.Datastore)
+	store, err := drivers.NewDriver(c.Datastore)
 	if err != nil {
 		log.Fatal().Err(err).Msg("error setting up datastore")
 	}

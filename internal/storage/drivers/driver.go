@@ -21,7 +21,7 @@ type (
 func NewDriver(config *Config) (Driver, error) {
 	if config.ArangoDB != nil {
 		log.Debug().Str("config", fmt.Sprintf("%#v", config.ArangoDB)).Msg("ADB config")
-		store, err := arangodb.NewArangoDBStorage(*config.ArangoDB)
+		store, err := arangodb.NewArangoDBStorage(config.ArangoDB)
 		if err != nil {
 			return nil, err
 		}

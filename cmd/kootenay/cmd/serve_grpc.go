@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/QuaererePlatform/go-quaerere/internal/config"
 	"github.com/QuaererePlatform/go-quaerere/internal/protocol/grpc/server"
 )
 
@@ -28,7 +29,7 @@ func serve_grpc(cmd *cobra.Command, args []string) {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	log.Info().Msg("Hello World")
 
-	c := new(server.Config)
+	c := new(config.AppConfig)
 
 	if err := viper.Unmarshal(c); err != nil {
 		log.Fatal().Err(err)
