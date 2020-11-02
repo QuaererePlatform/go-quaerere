@@ -8,11 +8,11 @@ endpoints = ["http://localhost:8529/"]
 password = "password"
 username = "quaerere"
 
+[serve.grpc]
+bind = "0.0.0.0"
+port = 9090
+
 [serve.http]
 bind = "0.0.0.0"
 port = 1323
 tls_disabled = true
-
-[serve.grpc]
-bind = "0.0.0.0"
-port = 9090

@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/rs/zerolog/log"
 
+	"github.com/QuaererePlatform/go-quaerere/internal/config"
 	"github.com/QuaererePlatform/go-quaerere/internal/protocol/http/server/handlers/kootenay"
 	"github.com/QuaererePlatform/go-quaerere/internal/storage/drivers"
 )
@@ -25,13 +26,14 @@ type (
 	}
 
 	server struct {
-		config     *Config
-		httpServer *echo.Echo
-		storage    drivers.Driver
+		config        *config.HTTPConfig
+		httpServer    *echo.Echo
+		storage       drivers.Driver
+		storageConfig *drivers.Config
 	}
 )
 
-func New(c *Config) (Server, error) {
+func New(c *config.AppConfig) (Server, error) {
 	e := echo.New()
 	e.Debug = c.DebugMode
 	e.HideBanner = true
@@ -45,8 +47,9 @@ func New(c *Config) (Server, error) {
 	}
 
 	s := &server{
-		config:     c,
-		httpServer: e,
+		config:        c.Serve.HTTP,
+		httpServer:    e,
+		storageConfig: c.Datastore,
 	}
 
 	if err := s.setupStorage(); err != nil {
@@ -89,7 +92,7 @@ func (s *server) setupRoutes() {
 
 func (s *server) setupStorage() error {
 	var err error
-	s.storage, err = drivers.NewDriver(s.config.StorageBackend)
+	s.storage, err = drivers.NewDriver(s.storageConfig)
 	if err != nil {
 		log.Fatal().Err(err).Msg("error setting up datastore")
 	}

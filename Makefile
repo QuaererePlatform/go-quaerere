@@ -1,3 +1,4 @@
+.PHONY: all build build_columbia build_kootenay proto test clean deps db_init_kootenay
 
 BINARY_NAME_COLUMBIA=columbia
 BINARY_NAME_KOOTENAY=kootenay
@@ -18,11 +19,11 @@ all: proto test build
 
 build: build_columbia build_kootenay
 
-build_columbia: proto
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GO_BUILD) -o $(OUT_DIR)/$(BINARY_NAME_COLUMBIA) -v ./cmd/columbia
+build_columbia:
+	CGO_ENABLED=0 $(GO_BUILD) -o $(OUT_DIR)/$(BINARY_NAME_COLUMBIA) -v ./cmd/columbia
 
-build_kootenay: proto
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GO_BUILD) -o $(OUT_DIR)/$(BINARY_NAME_KOOTENAY) -v ./cmd/kootenay
+build_kootenay:
+	CGO_ENABLED=0 $(GO_BUILD) -o $(OUT_DIR)/$(BINARY_NAME_KOOTENAY) -v ./cmd/kootenay
 
 proto:
 	$(PROTOC) --proto_path=$(PROTO_PATH) --proto_path=third_party --go_out=plugins=grpc:. $(PROTO_PATH)/accounting.proto

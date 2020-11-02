@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 
+	"github.com/QuaererePlatform/go-quaerere/internal/config"
 	v0service "github.com/QuaererePlatform/go-quaerere/internal/service/v0"
 	"github.com/QuaererePlatform/go-quaerere/internal/storage/drivers"
 	v0api "github.com/QuaererePlatform/go-quaerere/pkg/api/v0"
@@ -20,17 +21,19 @@ type (
 	}
 
 	server struct {
-		config     *Config
-		grpcServer *grpc.Server
-		storage    drivers.Driver
+		config        *config.GRPCConfig
+		grpcServer    *grpc.Server
+		storage       drivers.Driver
+		storageConfig *drivers.Config
 	}
 )
 
-func New(c *Config) (Server, error) {
+func New(c *config.AppConfig) (Server, error) {
 
 	s := server{
-		config:     c,
-		grpcServer: grpc.NewServer(),
+		config:        c.Serve.GRPC,
+		grpcServer:    grpc.NewServer(),
+		storageConfig: c.Datastore,
 	}
 
 	if err := s.setupStorage(); err != nil {
@@ -64,7 +67,7 @@ func (s *server) Shutdown(ctx context.Context) error {
 
 func (s *server) setupStorage() error {
 	var err error
-	s.storage, err = drivers.NewDriver(s.config.StorageBackend)
+	s.storage, err = drivers.NewDriver(s.storageConfig)
 	if err != nil {
 		log.Fatal().Err(err).Msg("error setting up datastore")
 	}

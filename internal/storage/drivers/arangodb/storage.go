@@ -17,7 +17,7 @@ import (
 type (
 	Storage struct {
 		auth     driver.Authentication
-		config   Config
+		config   *Config
 		client   driver.Client
 		db       driver.Database
 		cList    []string
@@ -38,7 +38,7 @@ func init() {
 	})
 }
 
-func NewArangoDBStorage(config Config) (*Storage, error) {
+func NewArangoDBStorage(config *Config) (*Storage, error) {
 	ll := logger.With().Str("method", "NewArangoDBStorage").Logger()
 	store := Storage{
 		config: config,
@@ -55,14 +55,15 @@ func NewArangoDBStorage(config Config) (*Storage, error) {
 			WEB_SITE_COLLECTION: nil,
 		},
 	}
-	if config.auth == true {
+
+	if config.ConfigAuthType != "" {
+		config.auth = true
 		ll.Debug().
-			Str("auth_type", fmt.Sprintf("%#v", config.authType)).
-			Msg("using auth")
-		switch config.authType {
-		case driver.AuthenticationTypeBasic:
+			Str("auth_type", config.ConfigAuthType).Msg("using auth")
+		switch config.ConfigAuthType {
+		case "basic":
 			store.auth = driver.BasicAuthentication(config.Username, config.Password)
-		case driver.AuthenticationTypeJWT:
+		case "jwt":
 			store.auth = driver.JWTAuthentication(config.Username, config.Password)
 		default:
 			err := new(UnknownAuthMethodError)
@@ -106,13 +107,14 @@ func (s *Storage) Connect(ctx context.Context) error {
 		Connection: conn,
 	}
 	if s.config.auth == true {
+
 		cc.Authentication = s.auth
 	}
 	s.client, err = driver.NewClient(cc)
 	if err != nil {
 		return err
 	}
-	e, err := s.client.DatabaseExists(ctx, s.config.Database)
+/*	e, err := s.client.DatabaseExists(ctx, s.config.Database)
 	if err != nil {
 		return err
 	}
@@ -120,10 +122,16 @@ func (s *Storage) Connect(ctx context.Context) error {
 		err := new(DatabaseDoesNotExistError)
 		err.db = s.config.Database
 		return err
-	}
+	}*/
+    ll.Debug().Str("s.config.Database", s.config.Database).Msg("")
 	s.db, err = s.client.Database(ctx, s.config.Database)
-	ll.Debug().Str("s.db", fmt.Sprintf("%#v", s.db))
-	return err
+	ll.Debug().Str("s.db", fmt.Sprintf("%#v", s.db)).Msg("")
+	ll.Debug().Str("s.config", fmt.Sprintf("%+v", s.config)).Msg("")
+	if err != nil {
+		ll.Debug().Msg("!!!!!!!!!!!!FOO!!!!!!!!!!!!!!")
+		return err
+	}
+	return nil
 }
 
 func (s *Storage) InitDB() error {
@@ -133,7 +141,7 @@ func (s *Storage) InitDB() error {
 		ctx := context.TODO()
 		defer ctx.Done()
 		e, err := s.db.CollectionExists(ctx, c)
-		ll.Info().Str("collection", c).Bool("exists", e).Msg("collection exists")
+		ll.Info().Str("collection", c).Bool("exists", e).Msg("")
 		if err != nil {
 			return err
 		}

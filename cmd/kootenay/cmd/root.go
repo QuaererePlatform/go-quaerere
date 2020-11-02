@@ -18,14 +18,8 @@ const (
 	FLAG_DEBUG_DEFAULT   = false
 	FLAG_DEBUG_DESCR     = "enable debug mode"
 
-	FLAG_STORAGE         = "storage-backend"
-	FLAG_STORAGE_SHORT   = "s"
-	FLAG_STORAGE_DEFAULT = "arangodb"
-	FLAG_STORAGE_DESCR   = "set storage backend"
-
 	ENV_FLAG_APP_ENV = "app_env"
 	ENV_FLAG_DEBUG   = "debug_mode"
-	ENV_FLAG_STORAGE = "storage_backend"
 )
 
 var rootCommand = &cobra.Command{
@@ -44,7 +38,6 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCommand.PersistentFlags().BoolP(FLAG_DEBUG, FLAG_DEBUG_SHORT, FLAG_DEBUG_DEFAULT, FLAG_DEBUG_DESCR)
-	rootCommand.PersistentFlags().StringP(FLAG_STORAGE, FLAG_STORAGE_SHORT, FLAG_STORAGE_DEFAULT, FLAG_STORAGE_DESCR)
 }
 
 func initConfig() {
@@ -52,8 +45,17 @@ func initConfig() {
 
 	viper.SetDefault(ENV_FLAG_APP_ENV, FLAG_APP_ENV_DEFAULT)
 	viper.SetDefault(ENV_FLAG_DEBUG, FLAG_DEBUG_DEFAULT)
-	viper.SetDefault(ENV_FLAG_STORAGE, FLAG_STORAGE_DEFAULT)
 
 	_ = viper.BindPFlag(ENV_FLAG_DEBUG, rootCommand.Flags().Lookup(FLAG_DEBUG))
-	_ = viper.BindPFlag(ENV_FLAG_STORAGE, rootCommand.Flags().Lookup(FLAG_STORAGE))
+
+	viper.SetConfigName("config")
+	viper.SetConfigType("toml")
+	viper.AddConfigPath("/etc/kootenay/")
+	viper.AddConfigPath("$HOME/.kootenay/")
+	viper.AddConfigPath(".")
+	err := viper.ReadInConfig()
+
+	if err != nil {
+		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	}
 }

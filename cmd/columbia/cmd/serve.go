@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/QuaererePlatform/go-quaerere/internal/config"
 	"github.com/QuaererePlatform/go-quaerere/internal/protocol/http/server"
 )
 
@@ -34,7 +35,7 @@ func init() {
 }
 
 func serve(cmd *cobra.Command, args []string) {
-	c := new(server.Config)
+	c := new(config.HTTPConfig)
 
 	if err := viper.Unmarshal(c); err != nil {
 		log.Fatal(err)
