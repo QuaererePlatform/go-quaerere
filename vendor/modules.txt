@@ -11,7 +11,7 @@ github.com/dgrijalva/jwt-go
 # github.com/fsnotify/fsnotify v1.4.9
 ## explicit
 github.com/fsnotify/fsnotify
-# github.com/golang/protobuf v1.4.2
+# github.com/golang/protobuf v1.4.3
 ## explicit
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes
@@ -89,6 +89,8 @@ github.com/spf13/pflag
 # github.com/spf13/viper v1.7.0
 ## explicit
 github.com/spf13/viper
+# github.com/stretchr/testify v1.6.1
+## explicit
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
 # github.com/valyala/bytebufferpool v1.0.0

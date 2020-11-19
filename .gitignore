@@ -3,4 +3,5 @@ gopath/
 tmp/
 .env*
 out/
+dist/
 .volumes/

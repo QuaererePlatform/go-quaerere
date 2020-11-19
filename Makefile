@@ -10,7 +10,7 @@ GO_CLEAN=$(GO_CMD) clean
 GO_TEST=$(GO_CMD) test
 GO_GET=$(GO_CMD) get
 GO_MOD=$(GO_CMD) mod
-OUT_DIR=./out
+OUT_DIR=./dist
 PROTOC=protoc
 PROTO_PATH=api/proto/v0
 
@@ -26,15 +26,14 @@ build_kootenay:
 	CGO_ENABLED=0 $(GO_BUILD) -o $(OUT_DIR)/$(BINARY_NAME_KOOTENAY) -v ./cmd/kootenay
 
 proto:
-	$(PROTOC) --proto_path=$(PROTO_PATH) --proto_path=third_party --go_out=plugins=grpc:. $(PROTO_PATH)/accounting.proto
-	$(PROTOC) --proto_path=$(PROTO_PATH) --proto_path=third_party --go_out=plugins=grpc:. $(PROTO_PATH)/web_page.proto
-	$(PROTOC) --proto_path=$(PROTO_PATH) --proto_path=third_party --go_out=plugins=grpc:. $(PROTO_PATH)/web_site.proto
+	protoc --proto_path=$(PROTO_PATH) --proto_path=third_party --go-grpc_out=. $(PROTO_PATH)/*.proto
 
 test: proto
 	$(GO_TEST) -v ./...
 
 clean:
 	$(GO_MOD) tidy
+	$(GO_MOD) vendor
 	$(GO_CLEAN)
 	rm -rf $(OUT_DIR)/*
 

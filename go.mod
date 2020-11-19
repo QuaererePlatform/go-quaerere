@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/arangodb/go-driver v0.0.0-20200723181325-00bb68360c88
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/golang/protobuf v1.4.2
+	github.com/golang/protobuf v1.4.3
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/kr/text v0.2.0 // indirect
 	github.com/labstack/echo/v4 v4.1.16
@@ -20,6 +20,7 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.7.0
+	github.com/stretchr/testify v1.6.1 // indirect
 	github.com/valyala/fasttemplate v1.2.0 // indirect
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899 // indirect
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
