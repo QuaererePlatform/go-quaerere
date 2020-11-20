@@ -11,6 +11,7 @@ import (
 const apiVersion = "v0"
 
 type webPageServiceServer struct {
+	v0.WebPageServiceServer
 	storage *drivers.Driver
 }
 
