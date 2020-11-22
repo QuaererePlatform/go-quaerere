@@ -10,7 +10,7 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/labstack/echo/v4 v4.1.16
 	github.com/mattn/go-colorable v0.1.7 // indirect
-	github.com/mattn/go-sqlite3 v2.0.3+incompatible
+	github.com/mattn/go-sqlite3 v1.14.5
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/pelletier/go-toml v1.8.0 // indirect

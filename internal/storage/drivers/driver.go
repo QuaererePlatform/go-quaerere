@@ -27,8 +27,7 @@ func NewDriver(config *Config) (Driver, error) {
 		}
 		return store, nil
 	} else {
-		err := new(UnknownStorageBackend)
-		err.backend = "nil"
+		err := new(UnconfiguredStorageBackend)
 		return nil, err
 	}
 }

@@ -1,15 +1,9 @@
 package drivers
 
-import (
-	"fmt"
-)
-
 type (
-	UnknownStorageBackend struct {
-		backend string
-	}
+	UnconfiguredStorageBackend struct {}
 )
 
-func (e *UnknownStorageBackend) Error() string {
-	return fmt.Sprintf("unknown storage backend: %s", e.backend)
+func (e *UnconfiguredStorageBackend) Error() string {
+	return "No configured Storage Backends"
 }
