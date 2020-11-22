@@ -33,21 +33,4 @@ func initConfig() {
 	viper.SetDefault("debug_mode", false)
 
 	viper.SetEnvPrefix("columbia")
-
-	/*	for k, v := range map[string]string{
-			"debug": "debug_mode",
-		} {
-			if err := viper.BindPFlag(v, serveCmd.PersistentFlags().Lookup(k)); err != nil {
-				log.Fatal(err)
-			}
-		}
-
-		for _, e := range []string{
-			"app_env",
-			"debug_mode",
-		} {
-			if err := viper.BindEnv(e); err != nil {
-				log.Fatal(err)
-			}
-		}*/
 }

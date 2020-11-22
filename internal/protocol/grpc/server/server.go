@@ -50,7 +50,7 @@ func (s *server) RegisterServices() error {
 }
 
 func (s *server) Start() error {
-	listen, err := net.Listen("tcp", fmt.Sprintf("%s:%s", s.config.Bind, s.config.Port))
+	listen, err := net.Listen("tcp", fmt.Sprintf("%s:%d", s.config.Bind, s.config.Port))
 	if err != nil {
 		return err
 	}

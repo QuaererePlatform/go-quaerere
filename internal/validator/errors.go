@@ -18,7 +18,7 @@ type (
 
 	err struct {
 		errors []error
-		lock *sync.RWMutex
+		lock   *sync.RWMutex
 	}
 )
 

@@ -24,9 +24,14 @@ type (
 
 func NewSQLStorage(config Config) (*SQLStorage, error) {
 	var err error
+	ran := false
 	once.Do(func() {
 		db.conn, err = sql.Open("sqlite3", config.Path)
+		ran = true
 	})
+	if ran == true && err != nil {
+		return nil, err
+	}
 
 	return &db, nil
 }
