@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/QuaererePlatform/go-quaerere/internal/config"
-	v0service "github.com/QuaererePlatform/go-quaerere/internal/service/v0"
+	v0service "github.com/QuaererePlatform/go-quaerere/internal/protocol/grpc/service/v0"
 	"github.com/QuaererePlatform/go-quaerere/internal/storage/drivers"
 	v0api "github.com/QuaererePlatform/go-quaerere/pkg/api/v0"
 )
@@ -40,12 +40,16 @@ func New(c *config.AppConfig) (Server, error) {
 		return nil, err
 	}
 
+	_ = s.registerServers()
+
 	return &s, nil
 }
 
-func (s *server) RegisterServices() error {
+func (s *server) registerServers() error {
 	wp := v0service.NewWebPageServiceServer(&s.storage)
 	v0api.RegisterWebPageServiceServer(s.grpcServer, wp)
+	ws := v0service.NewWebSiteServiceServer(&s.storage)
+	v0api.RegisterWebSiteServiceServer(s.grpcServer, ws)
 	return nil
 }
 

@@ -5,3 +5,4 @@ tmp/
 out/
 dist/
 .volumes/
+config.toml

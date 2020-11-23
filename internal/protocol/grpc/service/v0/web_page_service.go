@@ -8,8 +8,6 @@ import (
 	"github.com/QuaererePlatform/go-quaerere/pkg/api/v0"
 )
 
-const apiVersion = "v0"
-
 type webPageServiceServer struct {
 	v0.WebPageServiceServer
 	storage *drivers.Driver
@@ -35,17 +33,6 @@ func (s *webPageServiceServer) DeleteWebPage(ctx context.Context, request *v0.De
 func (s *webPageServiceServer) ListWebPages(ctx context.Context, request *v0.ListWebPageRequest) (*v0.ListWebPageResults, error) {
 	panic("implement me")
 }
-
-/*func (s *webPageServiceServer) checkAPI(api string) error {
-	// API version is "" means use current version of the service
-	if len(api) > 0 {
-		if apiVersion != api {
-			return status.Errorf(codes.Unimplemented,
-				"unsupported API version: service implements API version '%s', but asked for '%s'", apiVersion, api)
-		}
-	}
-	return nil
-}*/
 
 func NewWebPageServiceServer(s *drivers.Driver) v0.WebPageServiceServer {
 	return &webPageServiceServer{storage: s}
